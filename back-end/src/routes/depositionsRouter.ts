@@ -42,7 +42,6 @@ depositionsRouter.get("/:id", (request, response) => {
 
 depositionsRouter.post("/create", (request, response) => {
   uploadAvatar(request, response, (err: String) => {
-    console.log(err);
     if (err instanceof multer.MulterError) {
       return response.status(406).json(err);
     } else if (err) {
@@ -61,11 +60,11 @@ depositionsRouter.post("/create", (request, response) => {
         if (error) {
           return response.status(400).send({
             error,
-            error_message: "Error on get depositions",
+            error_message: "Error on create the depositions",
           });
         }
 
-        return response.status(200).send(result);
+        return response.status(200).send();
       }
     );
   });
