@@ -17,6 +17,13 @@ const uploadFolderCitiesImage = path.resolve(
   "cities"
 );
 
+const uploadFolderPlacesImage = path.resolve(
+  __dirname,
+  "..",
+  "uploads",
+  "places"
+);
+
 const StorageDepositionsAvatars = multer.diskStorage({
   destination: uploadFolderDepositionsAvatars,
   filename: function (req, file, callback) {
@@ -37,4 +44,18 @@ const StorageCitiesImage = multer.diskStorage({
   },
 });
 
-export default { StorageDepositionsAvatars, StorageCitiesImage };
+const StoragePlacesImage = multer.diskStorage({
+  destination: uploadFolderPlacesImage,
+  filename: function (req, file, callback) {
+    const fileHash = crypto.randomBytes(10).toString("hex");
+    const fileName = `${fileHash}-${file.originalname}`;
+
+    return callback(null, fileName);
+  },
+});
+
+export default {
+  StorageDepositionsAvatars,
+  StorageCitiesImage,
+  StoragePlacesImage,
+};
