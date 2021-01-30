@@ -1,0 +1,7 @@
+{
+  "host": "localhost",
+  "user": "",
+  "password": "",
+  "database": "traveler",
+  "charset": "utf8mb4"
+}
