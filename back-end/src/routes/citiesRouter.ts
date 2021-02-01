@@ -21,7 +21,14 @@ const uploadCityImage = multer({
 }).single("city-image");
 
 citiesRouter.get("/", (request, response) => {
-  conn.query("SELECT * FROM cities", (error, result) => {
+  let { limit, search } = request.query;
+
+  !limit ? (limit = "") : (limit = `LIMIT ${limit}`);
+  !search
+    ? (search = "")
+    : (search = `, IF(locate('${search}',name)>0, TRUE, FALSE) AS "opacity"`);
+
+  conn.query(`SELECT *${search} FROM cities ${limit}`, (error, result) => {
     if (error) {
       return response.status(400).send({
         error,

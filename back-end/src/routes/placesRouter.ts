@@ -10,6 +10,17 @@ const unlinkAsyncPlaceImage = promisify(fs.unlink);
 import conn from "../services/db";
 import StorageMulter from "../configs/mullter";
 
+interface PlaceProps {
+  id: number;
+  city_id: number;
+  name: string;
+  description: string;
+  phone_number: number | null;
+  address: string;
+  rating: number;
+  category: number;
+}
+
 const uploadImage = multer({
   storage: StorageMulter.StoragePlacesImage,
   limits: { fileSize: 4000000 }, // 4 MB
@@ -36,7 +47,22 @@ placesRouter.get("/:id", (request, response) => {
       });
     }
 
-    return response.status(200).send(result);
+    const handleRating = result.map((place: PlaceProps) => {
+      const rating = place.rating.toString().split(".");
+      if (rating.length === 2) {
+        return {
+          ...place,
+          rating: `${rating[0]},${rating[1]}`,
+        };
+      }
+
+      return {
+        ...place,
+        rating: `${rating[0]},0`,
+      };
+    });
+
+    return response.status(200).send(handleRating);
   });
 });
 
@@ -55,9 +81,19 @@ placesRouter.post("/update/:id", (request, response) => {
       description,
       phone_number,
       address,
+      category,
+      rating,
     } = request.body;
 
-    if (!name || !name_last_image || !description || !phone_number || !address)
+    if (
+      !name ||
+      !name_last_image ||
+      !description ||
+      !phone_number ||
+      !address ||
+      !category ||
+      !rating
+    )
       return response.status(400).send({
         error: "Error, missing fields",
       });
@@ -82,7 +118,7 @@ placesRouter.post("/update/:id", (request, response) => {
     const pathFile = `${process.env.HOST}places/images/${imageName}`;
 
     conn.query(
-      `UPDATE places SET name='${name}', image='${pathFile}', description='${description}', phone_number='${phone_number}', address='${address}' WHERE id=${id}`,
+      `UPDATE places SET name='${name}', image='${pathFile}', description='${description}', phone_number='${phone_number}', address='${address}', category='${category}', rating='${rating}' WHERE id=${id}`,
       (error, result) => {
         if (error) {
           return response.status(400).send({
@@ -106,18 +142,22 @@ placesRouter.post("/create/:id", (request, response) => {
     }
 
     const { id: city_id } = request.params;
-    let { name, description, phone_number, address } = request.body;
-
-    if (!phone_number) {
-      phone_number = null;
-    }
+    let {
+      name,
+      description,
+      phone_number,
+      address,
+      rating,
+      category,
+    } = request.body;
 
     const imagePath = request.file.filename;
     const pathFile = `${process.env.HOST}places/images/${imagePath}`;
 
     conn.query(
-      `INSERT INTO places (city_id, name, image, description, phone_number, address) 
-    VALUES ('${city_id}', '${name}', '${pathFile}', '${description}', '${phone_number}', '${address}')`,
+      `INSERT INTO places (city_id, name, image, description, phone_number, address, rating, category) 
+    VALUES ('${city_id}', '${name}', '${pathFile}', '${description}', '?', '${address}', '${rating}', '${category}')`,
+      [phone_number],
       (error, result) => {
         if (error) {
           return response.status(400).send({
