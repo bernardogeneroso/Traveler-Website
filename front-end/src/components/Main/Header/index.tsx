@@ -41,9 +41,11 @@ const Header: React.FC<HeaderProps> = ({
           </Link>
 
           {lastPage && (
-            <div>
-              <FiArrowLeft size={22} color="#A0ACB2" />
-            </div>
+            <Link to={`/${lastPage}`}>
+              <div>
+                <FiArrowLeft size={22} color="#A0ACB2" />
+              </div>
+            </Link>
           )}
         </ContainerLogo>
 

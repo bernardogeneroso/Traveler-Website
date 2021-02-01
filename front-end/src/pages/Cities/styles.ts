@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  height: 100%;
+  height: 100vh;
 
   background: #f5f8fa;
 `;
@@ -75,7 +75,6 @@ export const ContainerCities = styled.div`
   flex-direction: row;
   flex-wrap: wrap;
   width: calc(100% + 40px);
-  height: calc(100% - 96px);
   overflow-y: auto;
 
   margin-top: 30px;
