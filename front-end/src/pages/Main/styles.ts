@@ -86,7 +86,7 @@ export const ContentCity = styled.div<ContentCityProps>`
     border-top-right-radius: 20px;
     border-top-left-radius: 20px;
     height: 180px;
-    width: auto;
+    width: 260px;
     object-fit: cover;
   }
 
@@ -103,6 +103,11 @@ export const ContentCity = styled.div<ContentCityProps>`
     `}
 
   div {
+    border-bottom: 1px solid #dce2e5;
+    border-left: 1px solid #dce2e5;
+    border-right: 1px solid #dce2e5;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
     padding: 16px;
 
     h3 {

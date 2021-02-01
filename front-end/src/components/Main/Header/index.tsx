@@ -1,7 +1,9 @@
 import React from "react";
 import { FiSearch, FiX, FiArrowLeft } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 import travelerLogo from "../../../assets/header/Logo.png";
+import { useCities } from "../../../hooks/CitiesManager";
 
 import {
   Container,
@@ -17,15 +19,15 @@ interface HeaderProps {
   restrict?: boolean;
   lastPage?: string;
   middleContent?: "city" | "search" | "none";
-  cityName?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({
   restrict,
   lastPage,
   middleContent,
-  cityName,
 }) => {
+  const { searchCities, searchFilter, cleanSearchFilter } = useCities();
+
   return (
     <Container
       middleContent={
@@ -34,7 +36,9 @@ const Header: React.FC<HeaderProps> = ({
     >
       <ContainerStructure>
         <ContainerLogo>
-          <img src={travelerLogo} alt="Traveler" />
+          <Link to="/">
+            <img src={travelerLogo} alt="Traveler" />
+          </Link>
 
           {lastPage && (
             <div>
@@ -45,13 +49,28 @@ const Header: React.FC<HeaderProps> = ({
 
         <ContainerMiddle>
           {middleContent === "city" && (
-            <ContentMiddleCity>{cityName}</ContentMiddleCity>
+            <ContentMiddleCity>Cidade</ContentMiddleCity>
           )}
           {middleContent === "search" && (
             <ContentMiddleSearchCity>
-              <FiSearch size={22} color="#A0ACB2" />
-              <input type="text" placeholder="Qual é a cidade que procura?" />
-              <FiX size={22} color="#A0ACB2" />
+              <FiSearch
+                size={22}
+                color={searchCities !== "" ? "#F25D27" : "#A0ACB2"}
+              />
+              <input
+                type="text"
+                placeholder="Qual é a cidade que procura?"
+                onChange={searchFilter}
+                value={searchCities}
+              />
+              {searchCities !== "" && (
+                <FiX
+                  size={22}
+                  color="#A0ACB2"
+                  style={{ cursor: "pointer" }}
+                  onClick={cleanSearchFilter}
+                />
+              )}
             </ContentMiddleSearchCity>
           )}
         </ContainerMiddle>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import Header from "../../components/Main/Header";
 import api from "../../services/api";
+import { CityProps } from "../Cities";
 
 import {
   Container,
@@ -12,13 +13,6 @@ import {
   ContainerCities,
   ContentCity,
 } from "./styles";
-
-interface CityProps {
-  id: number;
-  name: string;
-  image: string;
-  description: string;
-}
 
 const Main: React.FC = () => {
   const [citites, setCitites] = useState<CityProps[]>([]);
