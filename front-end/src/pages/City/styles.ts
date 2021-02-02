@@ -42,6 +42,7 @@ export const ContainerCityInformation = styled.div`
   justify-content: space-between;
 
   margin-top: 80px;
+  margin-bottom: 80px;
 `;
 
 export const AboutCityInformation = styled.div`
@@ -276,5 +277,110 @@ export const ContentHighlightImage = styled.div`
   img {
     width: 563px;
     height: 293px;
+
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+`;
+
+export const ContainerPlacesFilter = styled.div`
+  margin-bottom: 30px;
+`;
+
+export const ContentPlacesFilter = styled.div`
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 30px;
+
+  h2 {
+    font-weight: 600;
+    font-size: 30px;
+    color: #123952;
+    margin-bottom: 40px;
+  }
+`;
+
+export const PlacesFilter = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  div {
+    color: #a0acb2;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #dce2e5;
+    cursor: pointer;
+  }
+
+  .focus {
+    color: #123952;
+    font-weight: 700;
+    border-bottom: 2px solid #f25d27;
+  }
+`;
+
+export const ContainerAllPlaces = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: calc(100% + 26px);
+`;
+
+export const ContentAllPlaces = styled.div`
+  flex-basis: 0px;
+  max-width: 100%;
+  position: relative;
+  padding-right: 26px;
+  padding-left: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 286px;
+  margin-bottom: 16px;
+  position: relative;
+
+  cursor: pointer;
+
+  transition: all ease 0.4s;
+
+  &:hover {
+    transform: scale(0.9);
+  }
+
+  img {
+    height: 164px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 18px;
+    color: #123952;
+    padding: 20px 10px 16px 24px;
+    border-left: 1px solid #dce2e5;
+    border-right: 1px solid #dce2e5;
+  }
+
+  div {
+    padding: 20px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: center;
+    border-left: 1px solid #dce2e5;
+    border-right: 1px solid #dce2e5;
+    border-bottom: 1px solid #dce2e5;
+    border-top: 1px solid #dce2e5;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    color: #617480;
   }
 `;

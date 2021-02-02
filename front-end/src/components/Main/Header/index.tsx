@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import travelerLogo from "../../../assets/header/Logo.png";
 import { useCities } from "../../../hooks/CitiesManager";
+import { CityProps } from "../../../pages/Cities";
 
 import {
   Container,
@@ -18,12 +19,14 @@ import {
 interface HeaderProps {
   restrict?: boolean;
   lastPage?: string;
+  cityInformation?: CityProps;
   middleContent?: "city" | "search" | "none";
 }
 
 const Header: React.FC<HeaderProps> = ({
   restrict,
   lastPage,
+  cityInformation,
   middleContent,
 }) => {
   const { searchCities, searchFilter, cleanSearchFilter } = useCities();
@@ -41,7 +44,14 @@ const Header: React.FC<HeaderProps> = ({
           </Link>
 
           {lastPage && (
-            <Link to={`/${lastPage}`}>
+            <Link
+              to={{
+                pathname: `/${lastPage}`,
+                state: {
+                  cityInformation,
+                },
+              }}
+            >
               <div>
                 <FiArrowLeft size={22} color="#A0ACB2" />
               </div>

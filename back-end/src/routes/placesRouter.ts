@@ -36,67 +36,73 @@ const uploadImage = multer({
 
 const placesRouter = express.Router();
 
-placesRouter.get("/:id", (request, response) => {
-  const { id } = request.params;
+placesRouter.get("/", (request, response) => {
+  let { id, category } = request.query;
 
-  conn.query(`SELECT * FROM places WHERE city_id='${id}'`, (error, result) => {
-    if (error) {
-      return response.status(400).send({
-        error,
-        error_message: "Error on get places",
-      });
-    }
+  !id ? (id = "1") : (id = `city_id='${id}'`);
+  !category ? (category = "") : (category = `AND category=${category}`);
 
-    const handleRating = result.map((place: PlaceProps) => {
-      const rating = place.rating.toString().split(".");
-      if (rating.length === 2) {
-        return {
-          ...place,
-          rating: `${rating[0]},${rating[1]}`,
-        };
+  conn.query(
+    `SELECT * FROM places WHERE ${id} ${category}`,
+    (error, result) => {
+      if (error) {
+        return response.status(400).send({
+          error,
+          error_message: "Error on get places",
+        });
       }
 
-      return {
-        ...place,
-        rating: `${rating[0]},0`,
-      };
-    });
+      const handleRating = result.map((place: PlaceProps) => {
+        const rating = place.rating.toString().split(".");
+        if (rating.length === 2) {
+          return {
+            ...place,
+            rating: `${rating[0]},${rating[1]}`,
+          };
+        }
 
-    return response.status(200).send(handleRating);
-  });
+        return {
+          ...place,
+          rating: `${rating[0]},0`,
+        };
+      });
+
+      return response.status(200).send(handleRating);
+    }
+  );
 });
 
 placesRouter.post("/update/:id", (request, response) => {
+  const { id } = request.params;
+  const {
+    name,
+    name_last_image,
+    description,
+    phone_number,
+    address,
+    category,
+    rating,
+  } = request.body;
+
+  if (
+    !name ||
+    !name_last_image ||
+    !description ||
+    !phone_number ||
+    !address ||
+    !category ||
+    !rating
+  )
+    return response.status(400).send({
+      error: "Error, missing fields",
+    });
+
   uploadImage(request, response, async (err: String) => {
     if (err instanceof multer.MulterError) {
       return response.status(406).json(err);
     } else if (err) {
       return response.status(406).json(err);
     }
-
-    const { id } = request.params;
-    const {
-      name,
-      name_last_image,
-      description,
-      phone_number,
-      address,
-      category,
-      rating,
-    } = request.body;
-
-    if (
-      !name ||
-      !name_last_image ||
-      !description ||
-      !phone_number ||
-      !address ||
-      !category ||
-      !rating
-    )
-      return response.status(400).send({
-        error: "Error, missing fields",
-      });
 
     const pathFolderPlacesImage = path.resolve(
       __dirname,

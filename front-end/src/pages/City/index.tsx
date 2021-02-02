@@ -26,13 +26,18 @@ import {
   ContainerHighlight,
   ContentHighlight,
   ContentHighlightImage,
+  ContainerPlacesFilter,
+  ContentPlacesFilter,
+  PlacesFilter,
+  ContainerAllPlaces,
+  ContentAllPlaces,
 } from "./styles";
 
 type LocationState = {
   cityInformation: CityProps;
 };
 
-interface PlacesProps {
+export interface PlaceProps {
   id: number;
   city_id: number;
   name: string;
@@ -46,13 +51,48 @@ interface PlacesProps {
 
 const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
   const [city] = useState(props.location.state.cityInformation);
-  const [places, setPlaces] = useState<PlacesProps[]>([]);
+  const [filterOption, setFilterOption] = useState<number>(1);
+  const [places, setPlaces] = useState<PlaceProps[]>([]);
+  const [placesFilter, setPlacesFiler] = useState<PlaceProps[]>([]);
 
   useEffect(() => {
-    api.get(`/places/${city.id}`).then((response) => {
-      setPlaces(response.data);
-    });
+    api
+      .get(`/places`, {
+        params: {
+          id: city.id,
+        },
+      })
+      .then((response) => {
+        setPlaces(response.data);
+      });
   }, [city]);
+
+  useEffect(() => {
+    api.get(`/places`).then((response) => {
+      setPlacesFiler(response.data);
+    });
+  }, []);
+
+  const handleFilterOptions = useCallback(
+    async (option: number) => {
+      if (option === filterOption) return;
+      setFilterOption(option);
+
+      if (option === 1) {
+        const { data } = await api.get(`/places`);
+        setPlacesFiler(data);
+        return;
+      }
+
+      const { data } = await api.get(`/places`, {
+        params: {
+          category: option - 1,
+        },
+      });
+      setPlacesFiler(data);
+    },
+    [filterOption]
+  );
 
   return (
     <Container>
@@ -114,9 +154,15 @@ const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
           <ContainerTopRating>
             <h2>Top avaliados</h2>
             <ContainerTops>
-              {places.map((place: PlacesProps) => (
+              {places.map((place: PlaceProps) => (
                 <Link
-                  to={`/place/${place.name}`}
+                  to={{
+                    pathname: `/place/${place.name}`,
+                    state: {
+                      placeInformation: place,
+                      cityInformation: city,
+                    },
+                  }}
                   style={{
                     textDecoration: "none",
                   }}
@@ -179,6 +225,84 @@ const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
               </ContainerHighlight>
             </Link>
           </ContainerTopRating>
+        )}
+
+        {placesFilter && (
+          <ContainerPlacesFilter>
+            <ContentPlacesFilter>
+              <h2>Conheça todos</h2>
+
+              <PlacesFilter>
+                <div
+                  className={filterOption === 1 ? "focus" : ""}
+                  onClick={() => handleFilterOptions(1)}
+                >
+                  Todas
+                </div>
+                <div
+                  className={filterOption === 2 ? "focus" : ""}
+                  onClick={() => handleFilterOptions(2)}
+                >
+                  Comida & Bebida
+                </div>
+                <div
+                  className={filterOption === 3 ? "focus" : ""}
+                  onClick={() => handleFilterOptions(3)}
+                >
+                  Pontos Turísticos
+                </div>
+                <div
+                  className={filterOption === 4 ? "focus" : ""}
+                  onClick={() => handleFilterOptions(4)}
+                >
+                  Eventos Organizados
+                </div>
+              </PlacesFilter>
+            </ContentPlacesFilter>
+
+            <ContainerAllPlaces>
+              {placesFilter.map((place: PlaceProps) => (
+                <Link
+                  to={{
+                    pathname: `/place/${place.name}`,
+                    state: {
+                      cityInformation: city,
+                      placeInformation: place,
+                    },
+                  }}
+                  style={{
+                    textDecoration: "none",
+                  }}
+                  key={place.id}
+                >
+                  <ContentAllPlaces>
+                    <img src={place.image} alt={place.name} />
+
+                    <h3>{place.name}</h3>
+
+                    {place.category === 1 ? (
+                      <div>
+                        Comida e Bebida <FiCoffee size={20} color="#F25D27" />{" "}
+                      </div>
+                    ) : place.category === 2 ? (
+                      <div>
+                        Pontos Turísticos <FiCamera size={20} color="#F25D27" />
+                      </div>
+                    ) : (
+                      <div>
+                        Eventos Organizados
+                        <FiCalendar size={20} color="#F25D27" />
+                      </div>
+                    )}
+                    <Rating>
+                      <AiFillStar size={26} color="#fff" />
+                      {place.rating}
+                    </Rating>
+                  </ContentAllPlaces>
+                </Link>
+              ))}
+            </ContainerAllPlaces>
+          </ContainerPlacesFilter>
         )}
       </ContainerContent>
     </Container>
