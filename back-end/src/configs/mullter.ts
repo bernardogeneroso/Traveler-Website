@@ -2,11 +2,11 @@ import path from "path";
 import multer from "multer";
 import crypto from "crypto";
 
-const uploadFolderDepositionsAvatars = path.resolve(
+const uploadFolderEvaluationsAvatars = path.resolve(
   __dirname,
   "..",
   "uploads",
-  "despositions",
+  "evaluations",
   "avatars"
 );
 
@@ -24,8 +24,8 @@ const uploadFolderPlacesImage = path.resolve(
   "places"
 );
 
-const StorageDepositionsAvatars = multer.diskStorage({
-  destination: uploadFolderDepositionsAvatars,
+const StorageEvaluationsAvatars = multer.diskStorage({
+  destination: uploadFolderEvaluationsAvatars,
   filename: function (req, file, callback) {
     const fileHash = crypto.randomBytes(10).toString("hex");
     const fileName = `${fileHash}-${file.originalname}`;
@@ -55,7 +55,7 @@ const StoragePlacesImage = multer.diskStorage({
 });
 
 export default {
-  StorageDepositionsAvatars,
+  StorageEvaluationsAvatars,
   StorageCitiesImage,
   StoragePlacesImage,
 };

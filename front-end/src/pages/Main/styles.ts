@@ -49,7 +49,7 @@ export const LeftPanel = styled.div`
     color: #fff;
     font-weight: 500;
     font-size: 18px;
-    padding: 18px 47px;
+    padding: 18px 46px;
     border: 0;
     border-radius: 10px;
     background: #f25d27;

@@ -5,10 +5,10 @@ import path from "path";
 import conn from "../services/db";
 import StorageMulter from "../configs/mullter";
 
-const depositionsRouter = express.Router();
+const evaluationsRouter = express.Router();
 
 const uploadAvatar = multer({
-  storage: StorageMulter.StorageDepositionsAvatars,
+  storage: StorageMulter.StorageEvaluationsAvatars,
   limits: { fileSize: 4000000 }, // 4 MB
   fileFilter: function (req, file, cb) {
     const ext = file.mimetype.split("/")[1];
@@ -20,16 +20,16 @@ const uploadAvatar = multer({
   },
 }).single("avatar");
 
-depositionsRouter.get("/:id", (request, response) => {
+evaluationsRouter.get("/:id", (request, response) => {
   const { id } = request.params;
 
   conn.query(
-    `SELECT * FROM depositions WHERE place_id='${id}'`,
+    `SELECT * FROM evaluations WHERE place_id='${id}'`,
     (error, result) => {
       if (error) {
         return response.status(400).send({
           error,
-          error_message: "Error on get depositions",
+          error_message: "Error on get evaluations",
         });
       } else if (Object.keys(result).length === 0) {
         return response.status(404).send(result);
@@ -40,7 +40,7 @@ depositionsRouter.get("/:id", (request, response) => {
   );
 });
 
-depositionsRouter.post("/create", (request, response) => {
+evaluationsRouter.post("/create", (request, response) => {
   uploadAvatar(request, response, (err: String) => {
     if (err instanceof multer.MulterError) {
       return response.status(406).json(err);
@@ -48,19 +48,19 @@ depositionsRouter.post("/create", (request, response) => {
       return response.status(406).json(err);
     }
 
-    const { city_id, place_id, name, description } = request.body;
+    const { place_id, name, description, rating } = request.body;
 
     const avatarPath = request.file.filename;
-    const pathFile = `${process.env.HOST}despositions/avatar/${avatarPath}`;
+    const pathFile = `${process.env.HOST}evaluations/avatar/${avatarPath}`;
 
     conn.query(
-      `INSERT INTO depositions (city_id, place_id, name, avatar, description) 
-    VALUES ('${city_id}', '${place_id}', '${name}', '${pathFile}', '${description}')`,
+      `INSERT INTO evaluations (place_id, name, avatar, description, rating) 
+    VALUES ('${place_id}', '${name}', '${pathFile}', '${description}', '${rating}')`,
       (error, result) => {
         if (error) {
           return response.status(400).send({
             error,
-            error_message: "Error on create the depositions",
+            error_message: "Error on create the evaluations",
           });
         }
 
@@ -70,11 +70,11 @@ depositionsRouter.post("/create", (request, response) => {
   });
 });
 
-depositionsRouter.use(
+evaluationsRouter.use(
   "/avatar",
   express.static(
-    path.resolve(__dirname, "..", "uploads", "despositions", "avatars")
+    path.resolve(__dirname, "..", "uploads", "evaluations", "avatars")
   )
 );
 
-export default depositionsRouter;
+export default evaluationsRouter;

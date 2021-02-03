@@ -1,24 +1,43 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { shade } from "polished";
+
+interface ContainerProps {
+  overflowHidden: boolean;
+}
+
+interface ContainerPlaceInformationProps {
+  filterBlur: boolean;
+}
 
 interface PlaceBackgroundProps {
   image: string;
 }
 
-export const Container = styled.div`
+interface ContentRatingAddEvaluationProps {
+  firstItem: boolean;
+  lastItem: boolean;
+}
+
+export const Container = styled.div<ContainerProps>`
   background: #f5f8fa;
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-  overflow: auto;
+  overflow: ${(props) => (props.overflowHidden ? "hidden" : "auto")};
 `;
 
-export const ContainerPlaceInformation = styled.div`
+export const ContainerPlaceInformation = styled.div<ContainerPlaceInformationProps>`
   display: flex;
   justify-content: row;
   flex-wrap: wrap;
+
+  ${(props) =>
+    props.filterBlur &&
+    css`
+      filter: blur(3px);
+    `}
 `;
 
 export const StructurePlaceInformation = styled.div`
@@ -175,6 +194,17 @@ export const ContainerPlaceContact = styled.div`
   }
 `;
 
+export const ContainerNextEditionEvent = styled.div`
+  margin-top: 80px;
+
+  display: flex;
+  flex-direction: column;
+
+  font-weight: 600;
+  color: #123952;
+  font-size: 24px;
+`;
+
 export const ContainerPlaceMaps = styled.div`
   margin-top: 80px;
 
@@ -204,11 +234,317 @@ export const ContainerStructurePlaceMaps = styled.div`
     color: #123952;
   }
 
-  span {
-    color: #a0acb2;
-    font-weight: 500;
-    font-size: 14px;
+  a {
+    text-decoration: none;
+
+    span {
+      color: #a0acb2;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all ease 0.2s;
+
+      &:hover {
+        color: ${shade(0.2, "#a0acb2")};
+      }
+    }
   }
 `;
 
 export const ContentPlaceMaps = styled.div``;
+
+export const ContentPlaceAddress = styled.div`
+  margin-top: 20px;
+
+  color: #a0acb2;
+  font-weight: 400;
+  font-size: 16px;
+`;
+
+export const ContainerPlaceRating = styled.div`
+  margin-top: 80px;
+
+  hr {
+    border: 1px solid #dce2e6;
+
+    margin-top: 10px;
+    margin-bottom: 40px;
+    color: #dce2e5;
+  }
+`;
+
+export const ContentStructurePlaceRating = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  div:nth-child(1) {
+    display: flex;
+    flex-direction: row;
+    width: 240px;
+    justify-content: space-between;
+
+    h2 {
+      font-weight: 600;
+      font-size: 28px;
+      color: #123952;
+    }
+
+    div {
+      display: flex;
+      flex-direction: row;
+      width: 78px;
+      justify-content: space-evenly;
+
+      span {
+        font-weight: 600;
+        color: #f25d27;
+        font-size: 20px;
+      }
+    }
+  }
+
+  div:nth-child(2) {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 160px;
+
+    span {
+      color: #a0acb2;
+      font-weight: 400;
+      font-size: 16px;
+      cursor: pointer;
+
+      transition: all ease 0.2s;
+
+      &:hover {
+        color: ${shade(0.2, "#a0acb2")};
+      }
+    }
+  }
+`;
+
+export const ContainerPlaceRatingComments = styled.div`
+  margin-bottom: 40px;
+`;
+
+export const ContentPlaceRatingComment = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+export const PlaceRatingCommentLeftImage = styled.div`
+  margin-right: 14px;
+
+  img {
+    height: 64px;
+  }
+`;
+
+export const PlaceRatingCommentInformation = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const PlaceRatingCommentHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  div:nth-child(1) {
+    font-weight: 600;
+    font-size: 18px;
+    color: #617480;
+  }
+`;
+
+export const PlaceRatingCommentContent = styled.div`
+  margin-top: 12px;
+  margin-bottom: 26px;
+  padding-bottom: 20px;
+
+  border-bottom: 1px solid #dce2e5;
+`;
+
+export const ContainerModalAddEvaluation = styled.div`
+  background-color: rgb(18, 57, 82, 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+  z-index: 9999;
+`;
+
+export const DialogModalAddEvaluation = styled.div`
+  height: 100%;
+  margin: 0 auto;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+export const ContentModalAddEvaluation = styled.div`
+  background: #f5f8fa;
+  border-radius: 20px;
+`;
+
+export const HeaderModalAddEvaluation = styled.div`
+  padding: 26px 30px 20px 30px;
+  background: #fff;
+  border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dce2e5;
+
+  h2 {
+    font-weight: 600;
+    font-size: 24px;
+    color: #123952;
+  }
+
+  div {
+    padding: 8px;
+    border: 1px solid #dce2e5;
+    border-radius: 10px;
+    display: flex;
+
+    &:hover {
+      cursor: pointer;
+      background: ${shade(0.03, "#fff")};
+    }
+  }
+`;
+
+export const BodyModalAddEvaluation = styled.div`
+  padding: 26px 30px 20px 30px;
+`;
+
+export const FirstLineModalAddEvaluation = styled.div`
+  height: 43px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: row;
+
+  div:nth-child(1) {
+    margin-right: 12px;
+    width: 286px;
+    display: flex;
+    align-items: center;
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label {
+      padding: 11px 24px;
+      border-radius: 10px;
+      font-weight: 400;
+      font-size: 16px;
+      color: #fff;
+      background: #115d8c;
+      cursor: pointer;
+    }
+  }
+
+  div:nth-child(2) {
+    height: 100%;
+    width: 100%;
+
+    input {
+      height: 100%;
+      width: 100%;
+      color: #000;
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1px solid #dce2e5;
+      font-size: 14px;
+    }
+
+    input::placeholder {
+      color: #a0acb2;
+      font-size: 14px;
+      font-weight: 400;
+    }
+  }
+`;
+
+export const SecondLineModalAddEvaluation = styled.div`
+  position: relative;
+
+  textarea {
+    width: 100%;
+    resize: none;
+    outline: none;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #dce2e6;
+    padding: 16px;
+  }
+
+  textarea::placeholder {
+    color: #a0acb2;
+    font-weight: 400;
+    font-size: 14px;
+  }
+
+  span {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin-bottom: 12px;
+    margin-right: 12px;
+
+    color: #a0acb2;
+    font-weight: 400;
+    font-size: 12px;
+  }
+`;
+
+export const ThirdLineModalAddEvaluation = styled.div`
+  margin-top: 10px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  text-align: center;
+  align-items: center;
+
+  span {
+    font-weight: 500;
+    font-size: 16px;
+    color: #f25d27;
+  }
+`;
+
+export const ContainerRatingAddEvaluation = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+export const ContentRatingAddEvaluation = styled.div<ContentRatingAddEvaluationProps>`
+  padding: 7px 28px;
+  display: flex;
+  border: 0.5px solid #dce2e5;
+  background: #fff;
+
+  ${(props) =>
+    props.firstItem
+      ? css`
+          border-top-left-radius: 10px;
+          border-bottom-left-radius: 10px;
+        `
+      : props.lastItem
+      ? css`
+          border-top-right-radius: 10px;
+          border-bottom-right-radius: 10px;
+        `
+      : ""}
+`;
