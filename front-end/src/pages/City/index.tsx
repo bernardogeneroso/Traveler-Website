@@ -8,7 +8,7 @@ import Header from "../../components/Main/Header";
 import { CityProps } from "../Cities";
 import api from "../../services/api";
 
-import englishBeach from "../../assets/city/praia_dos_ingleses.png";
+import englishBeach from "../../assets/city/praia_dos_ingleses.jpg";
 
 import {
   Container,
@@ -60,6 +60,7 @@ const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
       .get(`/places`, {
         params: {
           id: city.id,
+          limit: 4,
         },
       })
       .then((response) => {
@@ -197,7 +198,7 @@ const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
             </ContainerTops>
 
             <Link
-              to={`/place/`}
+              to={`/cities`}
               style={{
                 textDecoration: "none",
               }}
@@ -210,7 +211,7 @@ const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
                   </div>
 
                   <div>
-                    <h2>Praia dos Inglesses</h2>
+                    <h2>Praia dos Ingleses</h2>
 
                     <p>
                       Uma parte do paraíso na terra. Frequentemente com águas
@@ -220,7 +221,7 @@ const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
                   </div>
                 </ContentHighlight>
                 <ContentHighlightImage>
-                  <img src={englishBeach} alt="Praia dos Inglesses" />
+                  <img src={englishBeach} alt="Praia dos Ingleses" />
                 </ContentHighlightImage>
               </ContainerHighlight>
             </Link>

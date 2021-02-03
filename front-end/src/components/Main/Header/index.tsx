@@ -34,7 +34,9 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <Container
       middleContent={
-        middleContent === "city" || middleContent === "search" ? true : false
+        middleContent === "city" || middleContent === "search" || lastPage
+          ? true
+          : false
       }
     >
       <ContainerStructure>

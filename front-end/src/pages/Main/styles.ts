@@ -27,7 +27,7 @@ export const ContainerContent = styled.div`
 `;
 
 export const LeftPanel = styled.div`
-  height: 472px;
+  height: 500px;
   max-width: 310px;
   display: flex;
   flex-direction: column;
@@ -75,7 +75,6 @@ export const ContainerCities = styled.div`
 
 export const ContentCity = styled.div<ContentCityProps>`
   width: auto;
-  height: 250px;
 
   background: #fff;
   border-radius: 20px;
@@ -90,9 +89,14 @@ export const ContentCity = styled.div<ContentCityProps>`
     object-fit: cover;
   }
 
+  &:nth-child(1) {
+    height: 267px;
+  }
+
   ${(props) =>
     props.firstColumn &&
     css`
+      height: 267px;
       margin-top: -60px;
     `}
 

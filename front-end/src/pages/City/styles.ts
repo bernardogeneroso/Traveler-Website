@@ -343,6 +343,7 @@ export const ContentAllPlaces = styled.div`
   justify-content: center;
   width: 286px;
   margin-bottom: 16px;
+  margin-top: 20px;
   position: relative;
 
   cursor: pointer;

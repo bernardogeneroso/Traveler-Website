@@ -83,6 +83,11 @@ export const ContainerCities = styled.div`
 export const ContentCities = styled.div`
   margin-bottom: 26px;
   width: 250px;
+  background: #fff;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
 
   cursor: pointer;
 
@@ -111,6 +116,7 @@ export const ContentCities = styled.div`
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
     padding: 16px;
+    margin-top: -7px;
 
     h3 {
       font-weight: 600;
@@ -136,7 +142,7 @@ export const ContainerCitiesError = styled.div`
   justify-content: center;
   align-items: center;
 
-  padding-bottom: 160px;
+  padding-top: 160px;
 
   img {
     height: 80px;

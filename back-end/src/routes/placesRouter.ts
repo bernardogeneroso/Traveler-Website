@@ -23,7 +23,7 @@ interface PlaceProps {
 
 const uploadImage = multer({
   storage: StorageMulter.StoragePlacesImage,
-  limits: { fileSize: 4000000 }, // 4 MB
+  limits: { fileSize: 8000000 }, // 8 MB
   fileFilter: function (req, file, cb) {
     const ext = file.mimetype.split("/")[1];
     const typePermit = ["png", "jpg", "jpeg"];
@@ -37,13 +37,16 @@ const uploadImage = multer({
 const placesRouter = express.Router();
 
 placesRouter.get("/", (request, response) => {
-  let { id, category } = request.query;
+  let { id, category, limit } = request.query;
 
   !id ? (id = "1") : (id = `city_id='${id}'`);
   !category ? (category = "") : (category = `AND category=${category}`);
+  !limit
+    ? (limit = "")
+    : (limit = `GROUP BY rating ORDER BY rating DESC LIMIT ${limit}`);
 
   conn.query(
-    `SELECT * FROM places WHERE ${id} ${category}`,
+    `SELECT * FROM places WHERE ${id} ${category} ${limit}`,
     (error, result) => {
       if (error) {
         return response.status(400).send({
@@ -73,59 +76,38 @@ placesRouter.get("/", (request, response) => {
 });
 
 placesRouter.post("/update/:id", (request, response) => {
-  const { id } = request.params;
-  const {
-    name,
-    name_last_image,
-    description,
-    phone_number,
-    address,
-    category,
-    rating,
-  } = request.body;
-
-  if (
-    !name ||
-    !name_last_image ||
-    !description ||
-    !phone_number ||
-    !address ||
-    !category ||
-    !rating
-  )
-    return response.status(400).send({
-      error: "Error, missing fields",
-    });
-
-  uploadImage(request, response, async (err: String) => {
+  uploadImage(request, response, (err: String) => {
     if (err instanceof multer.MulterError) {
       return response.status(406).json(err);
     } else if (err) {
       return response.status(406).json(err);
     }
 
-    const pathFolderPlacesImage = path.resolve(
-      __dirname,
-      "..",
-      "uploads",
-      "places",
-      name_last_image
-    );
+    const { id } = request.params;
+    const {
+      name,
+      description,
+      phone_number,
+      address,
+      category,
+      rating,
+    } = request.body;
 
-    try {
-      await unlinkAsyncPlaceImage(pathFolderPlacesImage);
-    } catch {
+    if (
+      !name ||
+      !description ||
+      !phone_number ||
+      !address ||
+      !category ||
+      !rating
+    )
       return response.status(400).send({
-        error: "Error on delete image",
+        error: "Error, missing fields",
       });
-    }
-
-    const imageName = request.file.filename;
-    const pathFile = `${process.env.HOST}places/images/${imageName}`;
 
     conn.query(
-      `UPDATE places SET name='${name}', image='${pathFile}', description='${description}', phone_number='${phone_number}', address='${address}', category='${category}', rating='${rating}' WHERE id=${id}`,
-      (error, result) => {
+      `SELECT image FROM places WHERE id=${id}`,
+      async (error, result) => {
         if (error) {
           return response.status(400).send({
             error,
@@ -133,7 +115,38 @@ placesRouter.post("/update/:id", (request, response) => {
           });
         }
 
-        return response.status(200).send();
+        const pathFolderPlacesImage = path.resolve(
+          __dirname,
+          "..",
+          "uploads",
+          "places",
+          result[0].image.split("images/")[1]
+        );
+
+        try {
+          await unlinkAsyncPlaceImage(pathFolderPlacesImage);
+        } catch {
+          return response.status(400).send({
+            error: "Error on delete image",
+          });
+        }
+
+        const imageName = request.file.filename;
+        const pathFile = `${process.env.HOST}places/images/${imageName}`;
+
+        conn.query(
+          `UPDATE places SET name='${name}', image='${pathFile}', description='${description}', phone_number='${phone_number}', address='${address}', category='${category}', rating='${rating}' WHERE id=${id}`,
+          (error, result) => {
+            if (error) {
+              return response.status(400).send({
+                error,
+                error_message: "Error on update place",
+              });
+            }
+
+            return response.status(200).send();
+          }
+        );
       }
     );
   });
@@ -162,7 +175,7 @@ placesRouter.post("/create/:id", (request, response) => {
 
     conn.query(
       `INSERT INTO places (city_id, name, image, description, phone_number, address, rating, category) 
-    VALUES ('${city_id}', '${name}', '${pathFile}', '${description}', '?', '${address}', '${rating}', '${category}')`,
+    VALUES ('${city_id}', '${name}', '${pathFile}', '${description}', ?, '${address}', '${rating}', '${category}')`,
       [phone_number],
       (error, result) => {
         if (error) {
