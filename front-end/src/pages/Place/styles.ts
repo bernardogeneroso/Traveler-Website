@@ -16,6 +16,15 @@ interface PlaceBackgroundProps {
 interface ContentRatingAddEvaluationProps {
   firstItem: boolean;
   lastItem: boolean;
+  checked: boolean;
+}
+
+interface FirstLineModalAddEvaluationProps {
+  fileUploaded: boolean;
+}
+
+interface SecondLineModalAddEvaluationProps {
+  maxCharacther: boolean;
 }
 
 export const Container = styled.div<ContainerProps>`
@@ -346,6 +355,7 @@ export const PlaceRatingCommentLeftImage = styled.div`
 export const PlaceRatingCommentInformation = styled.div`
   display: flex;
   flex-direction: column;
+  width: 100%;
 `;
 
 export const PlaceRatingCommentHeader = styled.div`
@@ -427,7 +437,7 @@ export const BodyModalAddEvaluation = styled.div`
   padding: 26px 30px 20px 30px;
 `;
 
-export const FirstLineModalAddEvaluation = styled.div`
+export const FirstLineModalAddEvaluation = styled.div<FirstLineModalAddEvaluationProps>`
   height: 43px;
   margin-bottom: 18px;
   display: flex;
@@ -446,11 +456,55 @@ export const FirstLineModalAddEvaluation = styled.div`
     label {
       padding: 11px 24px;
       border-radius: 10px;
-      font-weight: 400;
-      font-size: 16px;
-      color: #fff;
-      background: #115d8c;
-      cursor: pointer;
+
+      ${(props) =>
+        props.fileUploaded
+          ? css`
+              background: linear-gradient(
+                90deg,
+                #dcf5dd 0%,
+                rgba(220, 245, 221, 0) 100%
+              );
+              cursor: pointer;
+              transition: all ease 0.2s;
+              color: #51b853;
+              width: 100%;
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              justify-content: space-around;
+
+              span:nth-child(1) {
+                font-weight: 500;
+                font-size: 16px;
+              }
+
+              span:nth-child(2) {
+                font-weight: 400;
+                font-size: 12px;
+              }
+
+              span:nth-child(2):hover {
+                color: ${shade(0.2, "#51b853")};
+              }
+            `
+          : css`
+              padding: 11px 24px;
+              border-radius: 10px;
+              font-weight: 400;
+              font-size: 16px;
+              color: #fff;
+              background: #115d8c;
+              cursor: pointer;
+              transition: all ease 0.2s;
+              display: flex;
+              justify-content: space-between;
+              width: 100%;
+
+              &:hover {
+                background: ${shade(0.2, "#115d8c")};
+              }
+            `}
     }
   }
 
@@ -476,7 +530,7 @@ export const FirstLineModalAddEvaluation = styled.div`
   }
 `;
 
-export const SecondLineModalAddEvaluation = styled.div`
+export const SecondLineModalAddEvaluation = styled.div<SecondLineModalAddEvaluationProps>`
   position: relative;
 
   textarea {
@@ -502,7 +556,7 @@ export const SecondLineModalAddEvaluation = styled.div`
     margin-bottom: 12px;
     margin-right: 12px;
 
-    color: #a0acb2;
+    color: ${(props) => (props.maxCharacther ? "#F25D27" : "#a0acb2")};
     font-weight: 400;
     font-size: 12px;
   }
@@ -532,8 +586,9 @@ export const ContainerRatingAddEvaluation = styled.div`
 export const ContentRatingAddEvaluation = styled.div<ContentRatingAddEvaluationProps>`
   padding: 7px 28px;
   display: flex;
-  border: 0.5px solid #dce2e5;
-  background: #fff;
+  border: 0.5px solid ${(props) => (props.checked ? "#F1BEAC" : "#dce2e5")};
+  background: ${(props) => (props.checked ? "#FEF7F5" : "#fff")};
+  cursor: pointer;
 
   ${(props) =>
     props.firstItem
@@ -547,4 +602,51 @@ export const ContentRatingAddEvaluation = styled.div<ContentRatingAddEvaluationP
           border-bottom-right-radius: 10px;
         `
       : ""}
+
+  transition: all ease 0.2s;
+
+  &:hover {
+    background: #fef7f5;
+    border: 0.5px solid #f1beac;
+  }
+`;
+
+export const FooterFormModalAddEvaluation = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  margin-top: 30px;
+
+  div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+
+    svg {
+      margin-right: 12px;
+    }
+
+    span {
+      color: #617480;
+      font-weight: 400;
+      font-size: 14px;
+      width: 200px;
+    }
+  }
+
+  button {
+    padding: 11px 20px;
+    border: 0;
+    background: #51b853;
+    color: #fff;
+    border-radius: 10px;
+
+    transition: all ease 0.2s;
+  }
+
+  button:hover {
+    background: ${shade(0.1, "#51b853")};
+  }
 `;

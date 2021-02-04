@@ -45,7 +45,9 @@ import {
   FirstLineModalAddEvaluation,
   SecondLineModalAddEvaluation,
   ThirdLineModalAddEvaluation,
+  FooterFormModalAddEvaluation,
 } from "./styles";
+import { FiInfo } from "react-icons/fi";
 
 type LocationState = {
   placeInformation: PlaceProps;
@@ -61,14 +63,27 @@ interface EvaluationsProps {
   rating: number;
 }
 
+interface FormModalAddEvaluationProps {
+  image?: File;
+  name: string;
+  description: string;
+  evaluation: number;
+}
+
 const Place = (
   props: RouteComponentProps<{}, StaticContext, LocationState>
 ) => {
   const [place] = useState(props.location.state.placeInformation);
-  const [evaluations, setEvaluations] = useState<
-    EvaluationsProps[] | undefined
-  >(undefined);
-  const [modalAddEvaluation, setModalAddEvaluation] = useState<boolean>(true);
+  const [evaluations, setEvaluations] = useState<EvaluationsProps[]>([]);
+  const [modalAddEvaluation, setModalAddEvaluation] = useState<boolean>(false);
+  const [
+    formModalAddEvaluation,
+    setFormModalAddEvaluation,
+  ] = useState<FormModalAddEvaluationProps>({
+    name: "",
+    description: "",
+    evaluation: 0,
+  });
   const [scheduleChoice] = useState<number>(() => {
     const dateNow = new Date();
     const dayOfWeek = getDay(dateNow);
@@ -85,6 +100,81 @@ const Place = (
   const handleToggleModalAddEvaluation = useCallback(() => {
     setModalAddEvaluation((state) => !state);
   }, []);
+
+  const handleFormModalAddEvaluation = useCallback(
+    (value: number, event: any) => {
+      if (value === 1) {
+        const name = event.target.value;
+
+        setFormModalAddEvaluation((state) => ({
+          ...state,
+          name,
+        }));
+      } else if (value === 2) {
+        const description = event.target.value;
+
+        setFormModalAddEvaluation((state) => ({
+          ...state,
+          description,
+        }));
+      } else if (value === 3) {
+        const file = event.target.files[0];
+
+        setFormModalAddEvaluation((state) => ({
+          ...state,
+          image: file,
+        }));
+      }
+    },
+    []
+  );
+
+  const handleEvalutionModalAdd = useCallback((value: number) => {
+    setFormModalAddEvaluation((state) => ({
+      ...state,
+      evaluation: value,
+    }));
+  }, []);
+
+  const handleSubmitModalAddEvaluation = useCallback(
+    async (event) => {
+      event.preventDefault();
+
+      const file = formModalAddEvaluation.image;
+      const name = formModalAddEvaluation.name;
+      const description = formModalAddEvaluation.description;
+      const evaluation = formModalAddEvaluation.evaluation;
+
+      if (
+        !file ||
+        !name ||
+        !description ||
+        !evaluation ||
+        description.length > 240
+      )
+        return;
+
+      const place_id = place.id;
+
+      const formData = new FormData();
+      formData.append("avatar", file);
+      formData.append("place_id", place_id.toString());
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("rating", evaluation.toString());
+
+      const { data } = await api.post("/evaluations/create", formData);
+
+      setEvaluations((state) => [...state, data]);
+      setModalAddEvaluation(false);
+      setFormModalAddEvaluation({
+        name: "",
+        description: "",
+        evaluation: 0,
+      });
+    },
+    [formModalAddEvaluation, place.id]
+  );
 
   const handleEventNextEdition = useMemo(() => {
     const dateNow = new Date();
@@ -281,7 +371,7 @@ const Place = (
                 <ContentPlaceAddress>{place.address}</ContentPlaceAddress>
               </ContainerPlaceMaps>
 
-              {evaluations && (
+              {Object.keys(evaluations).length !== 0 && (
                 <ContainerPlaceRating>
                   <ContentStructurePlaceRating>
                     <div>
@@ -327,8 +417,7 @@ const Place = (
                             </div>
                           </PlaceRatingCommentHeader>
                           <PlaceRatingCommentContent>
-                            Grande variedade de bolos, cucas, tortas e algumas
-                            opções de salgados.
+                            {evaluation.description}
                           </PlaceRatingCommentContent>
                         </PlaceRatingCommentInformation>
                       </ContentPlaceRatingComment>
@@ -355,11 +444,26 @@ const Place = (
                 </div>
               </HeaderModalAddEvaluation>
               <BodyModalAddEvaluation>
-                <form>
-                  <FirstLineModalAddEvaluation>
+                <form onSubmit={handleSubmitModalAddEvaluation}>
+                  <FirstLineModalAddEvaluation
+                    fileUploaded={formModalAddEvaluation.image ? true : false}
+                  >
                     <div>
-                      <label htmlFor="file-upload">Upload da sua foto</label>
-                      <input id="file-upload" type="file" />
+                      {!formModalAddEvaluation.image ? (
+                        <label htmlFor="file-upload">Upload da sua foto</label>
+                      ) : (
+                        <label htmlFor="file-upload">
+                          <span>Feito!</span>
+                          <span>Trocar foto</span>
+                        </label>
+                      )}
+                      <input
+                        id="file-upload"
+                        type="file"
+                        onChange={(event) =>
+                          handleFormModalAddEvaluation(3, event)
+                        }
+                      />
                     </div>
 
                     <div>
@@ -367,17 +471,33 @@ const Place = (
                         name="name"
                         type="text"
                         placeholder="Seu nome completo"
+                        onChange={(event) =>
+                          handleFormModalAddEvaluation(1, event)
+                        }
+                        value={formModalAddEvaluation.name}
                       />
                     </div>
                   </FirstLineModalAddEvaluation>
 
-                  <SecondLineModalAddEvaluation>
+                  <SecondLineModalAddEvaluation
+                    maxCharacther={
+                      formModalAddEvaluation.description.length > 240
+                        ? true
+                        : false
+                    }
+                  >
                     <textarea
                       name="description"
                       placeholder="Escreva aqui..."
                       rows={6}
+                      onChange={(event) =>
+                        handleFormModalAddEvaluation(2, event)
+                      }
                     ></textarea>
-                    <span>Máximo 240 caracteres</span>
+                    <span>
+                      ({formModalAddEvaluation.description.length}) Máximo 240
+                      caracteres
+                    </span>
                   </SecondLineModalAddEvaluation>
 
                   <ThirdLineModalAddEvaluation>
@@ -388,16 +508,38 @@ const Place = (
                         <ContentRatingAddEvaluation
                           firstItem={value === 1 ? true : false}
                           lastItem={value === 5 ? true : false}
+                          checked={
+                            formModalAddEvaluation.evaluation >= value
+                              ? true
+                              : false
+                          }
+                          onClick={() => handleEvalutionModalAdd(value)}
                         >
                           <AiOutlineStar
                             size={22}
-                            color="#A0ACB2"
+                            color={
+                              formModalAddEvaluation.evaluation >= value
+                                ? "#F25D27"
+                                : "#A0ACB2"
+                            }
                             key={value}
                           />
                         </ContentRatingAddEvaluation>
                       ))}
                     </ContainerRatingAddEvaluation>
                   </ThirdLineModalAddEvaluation>
+
+                  <FooterFormModalAddEvaluation>
+                    <div>
+                      <FiInfo size={26} color="#F25D27" />
+
+                      <span>
+                        Sua avaliação será analisada para poder ser publicada.
+                      </span>
+                    </div>
+
+                    <button type="submit">Enviar avaliação</button>
+                  </FooterFormModalAddEvaluation>
                 </form>
               </BodyModalAddEvaluation>
             </ContentModalAddEvaluation>
