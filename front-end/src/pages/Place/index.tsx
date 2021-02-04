@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { StaticContext } from "react-router";
 import { RouteComponentProps } from "react-router-dom";
+import {
+  FiCamera,
+  FiCalendar,
+  FiCoffee,
+  FiMessageSquare,
+} from "react-icons/fi";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { AiFillStar, AiOutlineStar, AiOutlineClose } from "react-icons/ai";
 import { getDay, getDate, getYear, getMonth, addWeeks } from "date-fns";
@@ -11,10 +17,13 @@ import { PlaceProps } from "../City";
 import { CityProps } from "../Cities";
 import api from "../../services/api";
 
+import emojiSmile from "../../assets/places/emoji_smile.png";
+
 import {
   Container,
   ContainerPlaceInformation,
   StructurePlaceInformation,
+  PlaceIcon,
   PlaceBackground,
   ContainerStructurePlaceInformation,
   ContentPlaceInformation,
@@ -46,6 +55,15 @@ import {
   SecondLineModalAddEvaluation,
   ThirdLineModalAddEvaluation,
   FooterFormModalAddEvaluation,
+  ContainerModalSeeEvaluation,
+  DialogModalSeeEvaluation,
+  ContentModalSeeEvaluation,
+  ContainerNotificationSendEvaluation,
+  DialogModalNotificationSendEvaluation,
+  ContentNotificationSendEvaluation,
+  HeaderModalSeeEvaluation,
+  ContainerPlaceRatingCommentsModalSeeEvaluation,
+  BodyModalSeeEvaluation,
 } from "./styles";
 import { FiInfo } from "react-icons/fi";
 
@@ -76,6 +94,11 @@ const Place = (
   const [place] = useState(props.location.state.placeInformation);
   const [evaluations, setEvaluations] = useState<EvaluationsProps[]>([]);
   const [modalAddEvaluation, setModalAddEvaluation] = useState<boolean>(false);
+  const [modalSeeEvaluation, setModalSeeEvaluation] = useState<boolean>(false);
+  const [
+    notificationSendEvaluation,
+    setNotificationSendEvaluation,
+  ] = useState<boolean>(false);
   const [
     formModalAddEvaluation,
     setFormModalAddEvaluation,
@@ -108,6 +131,14 @@ const Place = (
 
       return !state;
     });
+  }, []);
+
+  const handleToggleNotificationSendEvaluation = useCallback(() => {
+    setNotificationSendEvaluation((state) => !state);
+  }, []);
+
+  const handleToggleModalSeeEvaluation = useCallback(() => {
+    setModalSeeEvaluation((state) => !state);
   }, []);
 
   const handleFormModalAddEvaluation = useCallback(
@@ -172,17 +203,17 @@ const Place = (
       formData.append("description", description);
       formData.append("rating", evaluation.toString());
 
-      const { data } = await api.post("/evaluations/create", formData);
+      await api.post("/evaluations/create", formData);
 
-      setEvaluations((state) => [...state, data]);
-      setModalAddEvaluation(false);
-      setFormModalAddEvaluation({
-        name: "",
-        description: "",
-        evaluation: 0,
-      });
+      handleToggleModalAddEvaluation();
+      handleToggleNotificationSendEvaluation();
     },
-    [formModalAddEvaluation, place.id]
+    [
+      formModalAddEvaluation,
+      place.id,
+      handleToggleModalAddEvaluation,
+      handleToggleNotificationSendEvaluation,
+    ]
   );
 
   const handleEventNextEdition = useMemo(() => {
@@ -256,8 +287,20 @@ const Place = (
   }, [evaluations]);
 
   return (
-    <Container overflowHidden={modalAddEvaluation ? true : false}>
-      <ContainerPlaceInformation filterBlur={modalAddEvaluation ? true : false}>
+    <Container
+      overflowHidden={
+        modalAddEvaluation || notificationSendEvaluation || modalSeeEvaluation
+          ? true
+          : false
+      }
+    >
+      <ContainerPlaceInformation
+        filterBlur={
+          modalAddEvaluation || notificationSendEvaluation || modalSeeEvaluation
+            ? true
+            : false
+        }
+      >
         <StructurePlaceInformation>
           <Header
             lastPage={`city/${props.location.state.cityInformation.name}`}
@@ -396,7 +439,9 @@ const Place = (
                       <span onClick={handleToggleModalAddEvaluation}>
                         Adicionar
                       </span>
-                      <span>Ver todas</span>
+                      <span onClick={handleToggleModalSeeEvaluation}>
+                        Ver todas
+                      </span>
                     </div>
                   </ContentStructurePlaceRating>
                   <hr />
@@ -439,6 +484,15 @@ const Place = (
         </StructurePlaceInformation>
 
         <PlaceBackground image={place.image} />
+        <PlaceIcon>
+          {place.category === 1 ? (
+            <FiCoffee size={26} color="#F25D27" />
+          ) : place.category === 2 ? (
+            <FiCamera size={26} color="#F25D27" />
+          ) : (
+            <FiCalendar size={26} color="#F25D27" />
+          )}
+        </PlaceIcon>
       </ContainerPlaceInformation>
 
       {modalAddEvaluation && (
@@ -504,8 +558,9 @@ const Place = (
                       }
                     ></textarea>
                     <span>
-                      ({formModalAddEvaluation.description.length}) Máximo 240
-                      caracteres
+                      {formModalAddEvaluation.description.length !== 0 &&
+                        `(${formModalAddEvaluation.description.length})  `}
+                      Máximo 240 caracteres
                     </span>
                   </SecondLineModalAddEvaluation>
 
@@ -554,6 +609,89 @@ const Place = (
             </ContentModalAddEvaluation>
           </DialogModalAddEvaluation>
         </ContainerModalAddEvaluation>
+      )}
+
+      {modalSeeEvaluation && (
+        <ContainerModalSeeEvaluation>
+          <DialogModalSeeEvaluation>
+            <ContentModalSeeEvaluation>
+              <HeaderModalSeeEvaluation>
+                <div>
+                  <span>Nota {handleEvaluationAverage}</span>
+
+                  <span>
+                    <FiMessageSquare size={22} color="#617480" />
+                    {evaluations.length} comentários
+                  </span>
+                </div>
+
+                <div>
+                  <span
+                    onClick={() => {
+                      handleToggleModalSeeEvaluation();
+                      handleToggleModalAddEvaluation();
+                    }}
+                  >
+                    Adicionar avaliação
+                  </span>
+
+                  <span onClick={handleToggleModalSeeEvaluation}>
+                    <AiOutlineClose size={22} color="#A0ACB2" />
+                  </span>
+                </div>
+              </HeaderModalSeeEvaluation>
+              <BodyModalSeeEvaluation>
+                <ContainerPlaceRatingCommentsModalSeeEvaluation>
+                  {evaluations.map((evaluation: EvaluationsProps) => (
+                    <ContentPlaceRatingComment key={evaluation.id}>
+                      <PlaceRatingCommentLeftImage>
+                        <img src={evaluation.avatar} alt={evaluation.name} />
+                      </PlaceRatingCommentLeftImage>
+                      <PlaceRatingCommentInformation>
+                        <PlaceRatingCommentHeader>
+                          <div>{evaluation.name}</div>
+                        </PlaceRatingCommentHeader>
+                        <PlaceRatingCommentContent>
+                          {evaluation.description}
+
+                          <div>
+                            {[1, 2, 3, 4, 5].map((value: number) => {
+                              return evaluation.rating >= value ? (
+                                <span key={value}>
+                                  <AiFillStar size={22} color="#F25D27" />
+                                </span>
+                              ) : (
+                                <span key={value}>
+                                  <AiOutlineStar size={22} color="#F25D27" />
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </PlaceRatingCommentContent>
+                      </PlaceRatingCommentInformation>
+                    </ContentPlaceRatingComment>
+                  ))}
+                </ContainerPlaceRatingCommentsModalSeeEvaluation>
+              </BodyModalSeeEvaluation>
+            </ContentModalSeeEvaluation>
+          </DialogModalSeeEvaluation>
+        </ContainerModalSeeEvaluation>
+      )}
+
+      {notificationSendEvaluation && (
+        <ContainerNotificationSendEvaluation>
+          <DialogModalNotificationSendEvaluation>
+            <ContentNotificationSendEvaluation>
+              <img src={emojiSmile} alt="Smile emoji" />
+              <h1>Avaliação enviada!</h1>
+              <span>Agradecemos pelo seu tempo e colaboração.</span>
+
+              <button onClick={handleToggleNotificationSendEvaluation}>
+                Disponha :)
+              </button>
+            </ContentNotificationSendEvaluation>
+          </DialogModalNotificationSendEvaluation>
+        </ContainerNotificationSendEvaluation>
       )}
     </Container>
   );

@@ -64,14 +64,7 @@ evaluationsRouter.post("/create", (request, response) => {
           });
         }
 
-        return response.status(200).send({
-          id: result.insertId,
-          place_id,
-          name,
-          avatar: pathFile,
-          description,
-          rating,
-        });
+        return response.status(200).send();
       }
     );
   });
