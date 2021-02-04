@@ -98,7 +98,16 @@ const Place = (
   }, [place.id]);
 
   const handleToggleModalAddEvaluation = useCallback(() => {
-    setModalAddEvaluation((state) => !state);
+    setModalAddEvaluation((state) => {
+      if (state)
+        setFormModalAddEvaluation({
+          name: "",
+          description: "",
+          evaluation: 0,
+        });
+
+      return !state;
+    });
   }, []);
 
   const handleFormModalAddEvaluation = useCallback(
