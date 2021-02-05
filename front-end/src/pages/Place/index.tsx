@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { StaticContext, useHistory } from "react-router";
-import { RouteComponentProps, useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import {
   FiCamera,
   FiCalendar,
@@ -15,7 +14,6 @@ import { MapContainer, TileLayer } from "react-leaflet";
 
 import Header from "../../components/Main/Header";
 import { PlaceProps } from "../City";
-import { CityProps } from "../Cities";
 import api from "../../services/api";
 
 import emojiSmile from "../../assets/places/emoji_smile.png";
@@ -72,11 +70,6 @@ import {
 } from "./styles";
 import { FiInfo } from "react-icons/fi";
 
-type LocationState = {
-  placeInformation: PlaceProps;
-  cityInformation: CityProps;
-};
-
 interface EvaluationsProps {
   id: number;
   place_id: number;
@@ -97,9 +90,7 @@ interface ParamsProps {
   id: string;
 }
 
-const Place = (
-  props: RouteComponentProps<{}, StaticContext, LocationState>
-) => {
+const Place = () => {
   const params = useParams<ParamsProps>();
   const history = useHistory();
 
