@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { StaticContext } from "react-router";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { CgSpinnerTwo } from "react-icons/cg";
+import { Link, useParams, useHistory } from "react-router-dom";
 import { FiCamera, FiCoffee, FiCalendar, FiInfo } from "react-icons/fi";
 import { AiFillStar } from "react-icons/ai";
 
@@ -11,6 +11,10 @@ import api from "../../services/api";
 import englishBeach from "../../assets/city/praia_dos_ingleses.jpg";
 
 import {
+  ContainerLoading,
+  DialogLoading,
+  Loadbar,
+  Spinner,
   Container,
   ContainerBackground,
   Background,
@@ -33,10 +37,6 @@ import {
   ContentAllPlaces,
 } from "./styles";
 
-type LocationState = {
-  cityInformation: CityProps;
-};
-
 export interface PlaceProps {
   id: number;
   city_id: number;
@@ -49,11 +49,33 @@ export interface PlaceProps {
   rating: number;
 }
 
-const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
-  const [city] = useState(props.location.state.cityInformation);
+interface ParamsProps {
+  id: string;
+}
+
+const City = () => {
+  const params = useParams<ParamsProps>();
+  const history = useHistory();
+
+  const [city, setCity] = useState<CityProps>({} as CityProps);
+  const [loading, setLoading] = useState<boolean>(true);
   const [filterOption, setFilterOption] = useState<number>(1);
   const [places, setPlaces] = useState<PlaceProps[]>([]);
   const [placesFilter, setPlacesFiler] = useState<PlaceProps[]>([]);
+
+  useEffect(() => {
+    const { id } = params;
+
+    api
+      .get(`/cities/${id}`)
+      .then((response) => {
+        setCity(response.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        history.push("/cities");
+      });
+  }, [params, history]);
 
   useEffect(() => {
     api
@@ -96,217 +118,224 @@ const City = (props: RouteComponentProps<{}, StaticContext, LocationState>) => {
   );
 
   return (
-    <Container>
-      <Header restrict lastPage="cities" middleContent="city" />
-      <ContainerBackground>
-        <Background image={city.image} />
-      </ContainerBackground>
+    <>
+      {loading ? (
+        <ContainerLoading>
+          <DialogLoading>
+            <Loadbar>
+              <Spinner>
+                <CgSpinnerTwo size={48} color="#fff" />
+              </Spinner>
+            </Loadbar>
+          </DialogLoading>
+        </ContainerLoading>
+      ) : (
+        <Container>
+          <Header restrict lastPage="cities" middleContent="city" />
+          <ContainerBackground>
+            <Background image={city.image} />
+          </ContainerBackground>
 
-      <ContainerContent>
-        <ContainerCityInformation>
-          <AboutCityInformation>
-            <h1>{city.name}</h1>
+          <ContainerContent>
+            <ContainerCityInformation>
+              <AboutCityInformation>
+                <h1>{city.name}</h1>
 
-            <p>{city.description}</p>
+                <p>{city.description}</p>
 
-            <span>
-              É famosa pelas suas praias, incluindo estâncias turísticas
-              populares como a Praia dos Ingleses na extremidade norte da ilha.
-            </span>
-          </AboutCityInformation>
-          <PlacesCityInformation>
-            <ContainerPlace>
-              <div>
-                <FiCamera size={36} color="#F25D27" />
-              </div>
-
-              <div>
-                <h1>67</h1>
-
-                <span>Pontos Turísticos</span>
-              </div>
-            </ContainerPlace>
-            <ContainerPlace>
-              <div>
-                <FiCoffee size={36} color="#F25D27" />
-              </div>
-
-              <div>
-                <h1>20</h1>
-
-                <span>Comida e Bebida</span>
-              </div>
-            </ContainerPlace>
-            <ContainerPlace>
-              <div>
-                <FiCalendar size={36} color="#F25D27" />
-              </div>
-
-              <div>
-                <h1>11</h1>
-
-                <span>Eventos Organizados</span>
-              </div>
-            </ContainerPlace>
-          </PlacesCityInformation>
-        </ContainerCityInformation>
-
-        {Object.keys(places).length !== 0 && (
-          <ContainerTopRating>
-            <h2>Top avaliados</h2>
-            <ContainerTops>
-              {places.map((place: PlaceProps) => (
-                <Link
-                  to={{
-                    pathname: `/place/${place.name}`,
-                    state: {
-                      placeInformation: place,
-                      cityInformation: city,
-                    },
-                  }}
-                  style={{
-                    textDecoration: "none",
-                  }}
-                  key={place.id}
-                >
-                  <ContentTopRating>
-                    <img src={place.image} alt={place.name} />
-
-                    <h3>{place.name}</h3>
-
-                    {place.category === 1 ? (
-                      <div>
-                        Comida e Bebida <FiCoffee size={20} color="#F25D27" />{" "}
-                      </div>
-                    ) : place.category === 2 ? (
-                      <div>
-                        Pontos Turísticos <FiCamera size={20} color="#F25D27" />
-                      </div>
-                    ) : (
-                      <div>
-                        Eventos Organizados
-                        <FiCalendar size={20} color="#F25D27" />
-                      </div>
-                    )}
-                    <Rating>
-                      <AiFillStar size={26} color="#fff" />
-                      {place.rating}
-                    </Rating>
-                  </ContentTopRating>
-                </Link>
-              ))}
-            </ContainerTops>
-
-            <Link
-              to={`/cities`}
-              style={{
-                textDecoration: "none",
-              }}
-            >
-              <ContainerHighlight>
-                <ContentHighlight>
+                <span>
+                  É famosa pelas suas praias, incluindo estâncias turísticas
+                  populares como a Praia dos Ingleses na extremidade norte da
+                  ilha.
+                </span>
+              </AboutCityInformation>
+              <PlacesCityInformation>
+                <ContainerPlace>
                   <div>
-                    <FiInfo size={26} color="#fff" />
-                    Destaques
+                    <FiCamera size={36} color="#F25D27" />
                   </div>
 
                   <div>
-                    <h2>Praia dos Ingleses</h2>
+                    <h1>67</h1>
 
-                    <p>
-                      Uma parte do paraíso na terra. Frequentemente com águas
-                      claras em tons verdes e azuis. Um dos locais mais
-                      preferidos por turistas e viajantes.
-                    </p>
+                    <span>Pontos Turísticos</span>
                   </div>
-                </ContentHighlight>
-                <ContentHighlightImage>
-                  <img src={englishBeach} alt="Praia dos Ingleses" />
-                </ContentHighlightImage>
-              </ContainerHighlight>
-            </Link>
-          </ContainerTopRating>
-        )}
+                </ContainerPlace>
+                <ContainerPlace>
+                  <div>
+                    <FiCoffee size={36} color="#F25D27" />
+                  </div>
 
-        {placesFilter && (
-          <ContainerPlacesFilter>
-            <ContentPlacesFilter>
-              <h2>Conheça todos</h2>
+                  <div>
+                    <h1>20</h1>
 
-              <PlacesFilter>
-                <div
-                  className={filterOption === 1 ? "focus" : ""}
-                  onClick={() => handleFilterOptions(1)}
-                >
-                  Todas
-                </div>
-                <div
-                  className={filterOption === 2 ? "focus" : ""}
-                  onClick={() => handleFilterOptions(2)}
-                >
-                  Comida & Bebida
-                </div>
-                <div
-                  className={filterOption === 3 ? "focus" : ""}
-                  onClick={() => handleFilterOptions(3)}
-                >
-                  Pontos Turísticos
-                </div>
-                <div
-                  className={filterOption === 4 ? "focus" : ""}
-                  onClick={() => handleFilterOptions(4)}
-                >
-                  Eventos Organizados
-                </div>
-              </PlacesFilter>
-            </ContentPlacesFilter>
+                    <span>Comida e Bebida</span>
+                  </div>
+                </ContainerPlace>
+                <ContainerPlace>
+                  <div>
+                    <FiCalendar size={36} color="#F25D27" />
+                  </div>
 
-            <ContainerAllPlaces>
-              {placesFilter.map((place: PlaceProps) => (
+                  <div>
+                    <h1>11</h1>
+
+                    <span>Eventos Organizados</span>
+                  </div>
+                </ContainerPlace>
+              </PlacesCityInformation>
+            </ContainerCityInformation>
+
+            {Object.keys(places).length !== 0 && (
+              <ContainerTopRating>
+                <h2>Top avaliados</h2>
+                <ContainerTops>
+                  {places.map((place: PlaceProps) => (
+                    <Link
+                      to={`/place/${place.id}`}
+                      style={{
+                        textDecoration: "none",
+                      }}
+                      key={place.id}
+                    >
+                      <ContentTopRating>
+                        <img src={place.image} alt={place.name} />
+
+                        <h3>{place.name}</h3>
+
+                        {place.category === 1 ? (
+                          <div>
+                            Comida e Bebida{" "}
+                            <FiCoffee size={20} color="#F25D27" />{" "}
+                          </div>
+                        ) : place.category === 2 ? (
+                          <div>
+                            Pontos Turísticos{" "}
+                            <FiCamera size={20} color="#F25D27" />
+                          </div>
+                        ) : (
+                          <div>
+                            Eventos Organizados
+                            <FiCalendar size={20} color="#F25D27" />
+                          </div>
+                        )}
+                        <Rating>
+                          <AiFillStar size={26} color="#fff" />
+                          {place.rating}
+                        </Rating>
+                      </ContentTopRating>
+                    </Link>
+                  ))}
+                </ContainerTops>
+
                 <Link
-                  to={{
-                    pathname: `/place/${place.name}`,
-                    state: {
-                      cityInformation: city,
-                      placeInformation: place,
-                    },
-                  }}
+                  to={`/cities`}
                   style={{
                     textDecoration: "none",
                   }}
-                  key={place.id}
                 >
-                  <ContentAllPlaces>
-                    <img src={place.image} alt={place.name} />
+                  <ContainerHighlight>
+                    <ContentHighlight>
+                      <div>
+                        <FiInfo size={26} color="#fff" />
+                        Destaques
+                      </div>
 
-                    <h3>{place.name}</h3>
+                      <div>
+                        <h2>Praia dos Ingleses</h2>
 
-                    {place.category === 1 ? (
-                      <div>
-                        Comida e Bebida <FiCoffee size={20} color="#F25D27" />{" "}
+                        <p>
+                          Uma parte do paraíso na terra. Frequentemente com
+                          águas claras em tons verdes e azuis. Um dos locais
+                          mais preferidos por turistas e viajantes.
+                        </p>
                       </div>
-                    ) : place.category === 2 ? (
-                      <div>
-                        Pontos Turísticos <FiCamera size={20} color="#F25D27" />
-                      </div>
-                    ) : (
-                      <div>
-                        Eventos Organizados
-                        <FiCalendar size={20} color="#F25D27" />
-                      </div>
-                    )}
-                    <Rating>
-                      <AiFillStar size={26} color="#fff" />
-                      {place.rating}
-                    </Rating>
-                  </ContentAllPlaces>
+                    </ContentHighlight>
+                    <ContentHighlightImage>
+                      <img src={englishBeach} alt="Praia dos Ingleses" />
+                    </ContentHighlightImage>
+                  </ContainerHighlight>
                 </Link>
-              ))}
-            </ContainerAllPlaces>
-          </ContainerPlacesFilter>
-        )}
-      </ContainerContent>
-    </Container>
+              </ContainerTopRating>
+            )}
+
+            {placesFilter && (
+              <ContainerPlacesFilter>
+                <ContentPlacesFilter>
+                  <h2>Conheça todos</h2>
+
+                  <PlacesFilter>
+                    <div
+                      className={filterOption === 1 ? "focus" : ""}
+                      onClick={() => handleFilterOptions(1)}
+                    >
+                      Todas
+                    </div>
+                    <div
+                      className={filterOption === 2 ? "focus" : ""}
+                      onClick={() => handleFilterOptions(2)}
+                    >
+                      Comida & Bebida
+                    </div>
+                    <div
+                      className={filterOption === 3 ? "focus" : ""}
+                      onClick={() => handleFilterOptions(3)}
+                    >
+                      Pontos Turísticos
+                    </div>
+                    <div
+                      className={filterOption === 4 ? "focus" : ""}
+                      onClick={() => handleFilterOptions(4)}
+                    >
+                      Eventos Organizados
+                    </div>
+                  </PlacesFilter>
+                </ContentPlacesFilter>
+
+                <ContainerAllPlaces>
+                  {placesFilter.map((place: PlaceProps) => (
+                    <Link
+                      to={`/place/${place.id}`}
+                      style={{
+                        textDecoration: "none",
+                      }}
+                      key={place.id}
+                    >
+                      <ContentAllPlaces>
+                        <img src={place.image} alt={place.name} />
+
+                        <h3>{place.name}</h3>
+
+                        {place.category === 1 ? (
+                          <div>
+                            Comida e Bebida{" "}
+                            <FiCoffee size={20} color="#F25D27" />{" "}
+                          </div>
+                        ) : place.category === 2 ? (
+                          <div>
+                            Pontos Turísticos{" "}
+                            <FiCamera size={20} color="#F25D27" />
+                          </div>
+                        ) : (
+                          <div>
+                            Eventos Organizados
+                            <FiCalendar size={20} color="#F25D27" />
+                          </div>
+                        )}
+                        <Rating>
+                          <AiFillStar size={26} color="#fff" />
+                          {place.rating}
+                        </Rating>
+                      </ContentAllPlaces>
+                    </Link>
+                  ))}
+                </ContainerAllPlaces>
+              </ContainerPlacesFilter>
+            )}
+          </ContainerContent>
+        </Container>
+      )}
+    </>
   );
 };
 

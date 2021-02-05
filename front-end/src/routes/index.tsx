@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route } from "react-router-dom";
+import { Switch, Route, Redirect } from "react-router-dom";
 
 import Main from "../pages/Main";
 import Cities from "../pages/Cities";
@@ -11,8 +11,15 @@ const Routes: React.FC = () => {
     <Switch>
       <Route path="/" component={Main} exact />
       <Route path="/cities" component={Cities} />
-      <Route path="/city/:city" component={City} />
-      <Route path="/place/:place" component={Place} />
+      <Route path="/city/:id" component={City} />
+      <Route path="/place/:id" component={Place} />
+
+      <Route
+        path="*"
+        render={() => {
+          return <Redirect to="/cities" />;
+        }}
+      />
     </Switch>
   );
 };

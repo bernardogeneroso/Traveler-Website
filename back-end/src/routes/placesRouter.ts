@@ -75,6 +75,23 @@ placesRouter.get("/", (request, response) => {
   );
 });
 
+placesRouter.get("/:id", (request, response) => {
+  const { id } = request.params;
+
+  conn.query(`SELECT * FROM places WHERE id='${id}'`, (error, result) => {
+    if (error) {
+      return response.status(400).send({
+        error,
+        error_message: "Error on get place",
+      });
+    }
+
+    if (!result[0]) response.status(404).send();
+
+    return response.status(200).send(result[0]);
+  });
+});
+
 placesRouter.post("/update/:id", (request, response) => {
   uploadImage(request, response, (err: String) => {
     if (err instanceof multer.MulterError) {

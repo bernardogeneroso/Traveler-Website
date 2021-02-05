@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import { shade } from "polished";
 
 interface ContainerProps {
@@ -26,6 +26,51 @@ interface FirstLineModalAddEvaluationProps {
 interface SecondLineModalAddEvaluationProps {
   maxCharacther: boolean;
 }
+
+export const ContainerLoading = styled.div`
+  background-color: rgb(18, 57, 82, 0.9);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+  z-index: 9999;
+`;
+
+export const DialogLoading = styled.div`
+  height: 100%;
+  margin: 0 auto;
+  max-width: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const Loadbar = styled.div`
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+`;
+
+const spinner = keyframes`
+  from{
+    transform:rotate(0deg)
+  }
+
+  to{
+    transform:rotate(360deg)
+  }
+`;
+export const Spinner = styled.div`
+  animation: ${spinner} 1s linear 0s infinite;
+
+  i {
+    color: white;
+    font-size: 2rem;
+  }
+`;
 
 export const Container = styled.div<ContainerProps>`
   background: #f5f8fa;
@@ -275,7 +320,9 @@ export const ContainerStructurePlaceMaps = styled.div`
   }
 `;
 
-export const ContentPlaceMaps = styled.div``;
+export const ContentPlaceMaps = styled.div`
+  z-index: 0;
+`;
 
 export const ContentPlaceAddress = styled.div`
   margin-top: 20px;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { StaticContext } from "react-router";
-import { RouteComponentProps } from "react-router-dom";
+import { StaticContext, useHistory } from "react-router";
+import { RouteComponentProps, useParams } from "react-router-dom";
 import {
   FiCamera,
   FiCalendar,
@@ -8,6 +8,7 @@ import {
   FiMessageSquare,
 } from "react-icons/fi";
 import { IoLogoWhatsapp } from "react-icons/io";
+import { CgSpinnerTwo } from "react-icons/cg";
 import { AiFillStar, AiOutlineStar, AiOutlineClose } from "react-icons/ai";
 import { getDay, getDate, getYear, getMonth, addWeeks } from "date-fns";
 import { MapContainer, TileLayer } from "react-leaflet";
@@ -20,6 +21,10 @@ import api from "../../services/api";
 import emojiSmile from "../../assets/places/emoji_smile.png";
 
 import {
+  ContainerLoading,
+  DialogLoading,
+  Loadbar,
+  Spinner,
   Container,
   ContainerPlaceInformation,
   StructurePlaceInformation,
@@ -88,10 +93,18 @@ interface FormModalAddEvaluationProps {
   evaluation: number;
 }
 
+interface ParamsProps {
+  id: string;
+}
+
 const Place = (
   props: RouteComponentProps<{}, StaticContext, LocationState>
 ) => {
-  const [place] = useState(props.location.state.placeInformation);
+  const params = useParams<ParamsProps>();
+  const history = useHistory();
+
+  const [place, setPlace] = useState({} as PlaceProps);
+  const [loading, setLoading] = useState<boolean>(true);
   const [evaluations, setEvaluations] = useState<EvaluationsProps[]>([]);
   const [modalAddEvaluation, setModalAddEvaluation] = useState<boolean>(false);
   const [modalSeeEvaluation, setModalSeeEvaluation] = useState<boolean>(false);
@@ -115,19 +128,36 @@ const Place = (
   });
 
   useEffect(() => {
-    api.get(`/evaluations/${place.id}`).then((response) => {
-      setEvaluations(response.data);
-    });
+    const { id } = params;
+
+    api
+      .get(`/places/${id}`)
+      .then((response) => {
+        setPlace(response.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        history.push("/cities");
+      });
+  }, [params, history]);
+
+  useEffect(() => {
+    if (place.id) {
+      api.get(`/evaluations/${place.id}`).then((response) => {
+        setEvaluations(response.data);
+      });
+    }
   }, [place.id]);
 
   const handleToggleModalAddEvaluation = useCallback(() => {
     setModalAddEvaluation((state) => {
-      if (state)
+      if (state) {
         setFormModalAddEvaluation({
           name: "",
           description: "",
           evaluation: 0,
         });
+      }
 
       return !state;
     });
@@ -287,413 +317,445 @@ const Place = (
   }, [evaluations]);
 
   return (
-    <Container
-      overflowHidden={
-        modalAddEvaluation || notificationSendEvaluation || modalSeeEvaluation
-          ? true
-          : false
-      }
-    >
-      <ContainerPlaceInformation
-        filterBlur={
-          modalAddEvaluation || notificationSendEvaluation || modalSeeEvaluation
-            ? true
-            : false
-        }
-      >
-        <StructurePlaceInformation>
-          <Header
-            lastPage={`city/${props.location.state.cityInformation.name}`}
-            cityInformation={props.location.state.cityInformation}
-          />
+    <>
+      {loading ? (
+        <ContainerLoading>
+          <DialogLoading>
+            <Loadbar>
+              <Spinner>
+                <CgSpinnerTwo size={48} color="#fff" />
+              </Spinner>
+            </Loadbar>
+          </DialogLoading>
+        </ContainerLoading>
+      ) : (
+        <Container
+          overflowHidden={
+            modalAddEvaluation ||
+            notificationSendEvaluation ||
+            modalSeeEvaluation
+              ? true
+              : false
+          }
+        >
+          <ContainerPlaceInformation
+            filterBlur={
+              modalAddEvaluation ||
+              notificationSendEvaluation ||
+              modalSeeEvaluation
+                ? true
+                : false
+            }
+          >
+            <StructurePlaceInformation>
+              <Header lastPage={`city/${place.city_id}`} />
 
-          <ContainerStructurePlaceInformation>
-            <ContentPlaceInformation>
-              <h1>{place.name}</h1>
+              <ContainerStructurePlaceInformation>
+                <ContentPlaceInformation>
+                  <h1>{place.name}</h1>
 
-              <p>{place.description}</p>
+                  <p>{place.description}</p>
 
-              {place.category === 1 ? (
-                <>
-                  <StructureShecdulesPlace>
-                    <h2>Atendimento</h2>
-                    <hr />
-                    <ContainerShecdulesPlace>
-                      <ContentShecdulesPlace
-                        className={scheduleChoice === 1 ? "focus" : ""}
-                      >
-                        <span>Domingo</span>
-                        <div>Fechado</div>
-                      </ContentShecdulesPlace>
-                      <ContentShecdulesPlace
-                        className={scheduleChoice === 2 ? "focus" : ""}
-                      >
-                        <span>Segunda</span>
-                        <div>8h - 19h</div>
-                      </ContentShecdulesPlace>
-                      <ContentShecdulesPlace
-                        className={scheduleChoice === 3 ? "focus" : ""}
-                      >
-                        <span>Terça</span>
-                        <div>8h - 19h</div>
-                      </ContentShecdulesPlace>
-                      <ContentShecdulesPlace
-                        className={scheduleChoice === 4 ? "focus" : ""}
-                      >
-                        <span>Quarta</span>
-                        <div>8h - 19h</div>
-                      </ContentShecdulesPlace>
-                      <ContentShecdulesPlace
-                        className={scheduleChoice === 5 ? "focus" : ""}
-                      >
-                        <span>Quinta</span>
-                        <div>8h - 19h</div>
-                      </ContentShecdulesPlace>
-                      <ContentShecdulesPlace
-                        className={scheduleChoice === 6 ? "focus" : ""}
-                      >
-                        <span>Sexta</span>
-                        <div>8h - 19h</div>
-                      </ContentShecdulesPlace>
-                      <ContentShecdulesPlace
-                        className={scheduleChoice === 7 ? "focus" : ""}
-                      >
-                        <span>Sábado</span>
-                        <div>8h - 17h</div>
-                      </ContentShecdulesPlace>
-                    </ContainerShecdulesPlace>
-                  </StructureShecdulesPlace>
+                  {place.category === 1 ? (
+                    <>
+                      <StructureShecdulesPlace>
+                        <h2>Atendimento</h2>
+                        <hr />
+                        <ContainerShecdulesPlace>
+                          <ContentShecdulesPlace
+                            className={scheduleChoice === 1 ? "focus" : ""}
+                          >
+                            <span>Domingo</span>
+                            <div>Fechado</div>
+                          </ContentShecdulesPlace>
+                          <ContentShecdulesPlace
+                            className={scheduleChoice === 2 ? "focus" : ""}
+                          >
+                            <span>Segunda</span>
+                            <div>8h - 19h</div>
+                          </ContentShecdulesPlace>
+                          <ContentShecdulesPlace
+                            className={scheduleChoice === 3 ? "focus" : ""}
+                          >
+                            <span>Terça</span>
+                            <div>8h - 19h</div>
+                          </ContentShecdulesPlace>
+                          <ContentShecdulesPlace
+                            className={scheduleChoice === 4 ? "focus" : ""}
+                          >
+                            <span>Quarta</span>
+                            <div>8h - 19h</div>
+                          </ContentShecdulesPlace>
+                          <ContentShecdulesPlace
+                            className={scheduleChoice === 5 ? "focus" : ""}
+                          >
+                            <span>Quinta</span>
+                            <div>8h - 19h</div>
+                          </ContentShecdulesPlace>
+                          <ContentShecdulesPlace
+                            className={scheduleChoice === 6 ? "focus" : ""}
+                          >
+                            <span>Sexta</span>
+                            <div>8h - 19h</div>
+                          </ContentShecdulesPlace>
+                          <ContentShecdulesPlace
+                            className={scheduleChoice === 7 ? "focus" : ""}
+                          >
+                            <span>Sábado</span>
+                            <div>8h - 17h</div>
+                          </ContentShecdulesPlace>
+                        </ContainerShecdulesPlace>
+                      </StructureShecdulesPlace>
 
-                  <ContainerPlaceContact>
-                    <button>
-                      <IoLogoWhatsapp
-                        size={22}
-                        color="#438846"
-                        style={{ zIndex: 9 }}
-                      />
-                      Entrar em contacto<div></div>
-                    </button>
-
-                    <div>
-                      Telefone
-                      <span>{place.phone_number}</span>
-                    </div>
-                  </ContainerPlaceContact>
-                </>
-              ) : (
-                place.category === 3 && (
-                  <ContainerNextEditionEvent>
-                    <span>Próxima edição em</span>
-                    <span>{handleEventNextEdition}</span>
-                  </ContainerNextEditionEvent>
-                )
-              )}
-
-              <ContainerPlaceMaps>
-                <ContainerStructurePlaceMaps>
-                  <h2>Endereço</h2>
-
-                  <a
-                    href="https://www.google.com/maps/place/37.1362+-8.5377"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <span>Ver no Google Maps</span>
-                  </a>
-                </ContainerStructurePlaceMaps>
-                <hr />
-
-                <ContentPlaceMaps>
-                  <div>
-                    <MapContainer
-                      center={[37.1362, -8.5377]}
-                      zoom={14}
-                      scrollWheelZoom={false}
-                      style={{ height: 180, borderRadius: 10 }}
-                      maxZoom={18}
-                    >
-                      <TileLayer
-                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                    </MapContainer>
-                  </div>
-                </ContentPlaceMaps>
-
-                <ContentPlaceAddress>{place.address}</ContentPlaceAddress>
-              </ContainerPlaceMaps>
-
-              {Object.keys(evaluations).length !== 0 && (
-                <ContainerPlaceRating>
-                  <ContentStructurePlaceRating>
-                    <div>
-                      <h2>Avaliações</h2>
-
-                      <div>
-                        <AiFillStar size={22} color="#F25D27" />
-                        <span>{handleEvaluationAverage}</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <span onClick={handleToggleModalAddEvaluation}>
-                        Adicionar
-                      </span>
-                      <span onClick={handleToggleModalSeeEvaluation}>
-                        Ver todas
-                      </span>
-                    </div>
-                  </ContentStructurePlaceRating>
-                  <hr />
-
-                  <ContainerPlaceRatingComments>
-                    {evaluations.map((evaluation: EvaluationsProps) => (
-                      <ContentPlaceRatingComment key={evaluation.id}>
-                        <PlaceRatingCommentLeftImage>
-                          <img src={evaluation.avatar} alt={evaluation.name} />
-                        </PlaceRatingCommentLeftImage>
-                        <PlaceRatingCommentInformation>
-                          <PlaceRatingCommentHeader>
-                            <div>{evaluation.name}</div>
-
-                            <div>
-                              {[1, 2, 3, 4, 5].map((value: number) => {
-                                return evaluation.rating >= value ? (
-                                  <span key={value}>
-                                    <AiFillStar size={22} color="#F25D27" />
-                                  </span>
-                                ) : (
-                                  <span key={value}>
-                                    <AiOutlineStar size={22} color="#F25D27" />
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          </PlaceRatingCommentHeader>
-                          <PlaceRatingCommentContent>
-                            {evaluation.description}
-                          </PlaceRatingCommentContent>
-                        </PlaceRatingCommentInformation>
-                      </ContentPlaceRatingComment>
-                    ))}
-                  </ContainerPlaceRatingComments>
-                </ContainerPlaceRating>
-              )}
-            </ContentPlaceInformation>
-          </ContainerStructurePlaceInformation>
-        </StructurePlaceInformation>
-
-        <PlaceBackground image={place.image} />
-        <PlaceIcon>
-          {place.category === 1 ? (
-            <FiCoffee size={26} color="#F25D27" />
-          ) : place.category === 2 ? (
-            <FiCamera size={26} color="#F25D27" />
-          ) : (
-            <FiCalendar size={26} color="#F25D27" />
-          )}
-        </PlaceIcon>
-      </ContainerPlaceInformation>
-
-      {modalAddEvaluation && (
-        <ContainerModalAddEvaluation>
-          <DialogModalAddEvaluation>
-            <ContentModalAddEvaluation>
-              <HeaderModalAddEvaluation>
-                <h2>Adicionar avaliação</h2>
-
-                <div onClick={handleToggleModalAddEvaluation}>
-                  <AiOutlineClose size={22} color="#A0ACB2" />
-                </div>
-              </HeaderModalAddEvaluation>
-              <BodyModalAddEvaluation>
-                <form onSubmit={handleSubmitModalAddEvaluation}>
-                  <FirstLineModalAddEvaluation
-                    fileUploaded={formModalAddEvaluation.image ? true : false}
-                  >
-                    <div>
-                      {!formModalAddEvaluation.image ? (
-                        <label htmlFor="file-upload">Upload da sua foto</label>
-                      ) : (
-                        <label htmlFor="file-upload">
-                          <span>Feito!</span>
-                          <span>Trocar foto</span>
-                        </label>
-                      )}
-                      <input
-                        id="file-upload"
-                        type="file"
-                        onChange={(event) =>
-                          handleFormModalAddEvaluation(3, event)
-                        }
-                      />
-                    </div>
-
-                    <div>
-                      <input
-                        name="name"
-                        type="text"
-                        placeholder="Seu nome completo"
-                        onChange={(event) =>
-                          handleFormModalAddEvaluation(1, event)
-                        }
-                        value={formModalAddEvaluation.name}
-                      />
-                    </div>
-                  </FirstLineModalAddEvaluation>
-
-                  <SecondLineModalAddEvaluation
-                    maxCharacther={
-                      formModalAddEvaluation.description.length > 240
-                        ? true
-                        : false
-                    }
-                  >
-                    <textarea
-                      name="description"
-                      placeholder="Escreva aqui..."
-                      rows={6}
-                      onChange={(event) =>
-                        handleFormModalAddEvaluation(2, event)
-                      }
-                    ></textarea>
-                    <span>
-                      {formModalAddEvaluation.description.length !== 0 &&
-                        `(${formModalAddEvaluation.description.length})  `}
-                      Máximo 240 caracteres
-                    </span>
-                  </SecondLineModalAddEvaluation>
-
-                  <ThirdLineModalAddEvaluation>
-                    <span>Sua nota de 1 a 5</span>
-
-                    <ContainerRatingAddEvaluation>
-                      {[1, 2, 3, 4, 5].map((value: number) => (
-                        <ContentRatingAddEvaluation
-                          firstItem={value === 1 ? true : false}
-                          lastItem={value === 5 ? true : false}
-                          checked={
-                            formModalAddEvaluation.evaluation >= value
-                              ? true
-                              : false
-                          }
-                          onClick={() => handleEvalutionModalAdd(value)}
-                        >
-                          <AiOutlineStar
+                      <ContainerPlaceContact>
+                        <button>
+                          <IoLogoWhatsapp
                             size={22}
-                            color={
-                              formModalAddEvaluation.evaluation >= value
-                                ? "#F25D27"
-                                : "#A0ACB2"
-                            }
-                            key={value}
+                            color="#438846"
+                            style={{ zIndex: 9 }}
                           />
-                        </ContentRatingAddEvaluation>
-                      ))}
-                    </ContainerRatingAddEvaluation>
-                  </ThirdLineModalAddEvaluation>
+                          Entrar em contacto<div></div>
+                        </button>
 
-                  <FooterFormModalAddEvaluation>
-                    <div>
-                      <FiInfo size={26} color="#F25D27" />
+                        <div>
+                          Telefone
+                          <span>{place.phone_number}</span>
+                        </div>
+                      </ContainerPlaceContact>
+                    </>
+                  ) : (
+                    place.category === 3 && (
+                      <ContainerNextEditionEvent>
+                        <span>Próxima edição em</span>
+                        <span>{handleEventNextEdition}</span>
+                      </ContainerNextEditionEvent>
+                    )
+                  )}
 
-                      <span>
-                        Sua avaliação será analisada para poder ser publicada.
-                      </span>
-                    </div>
+                  <ContainerPlaceMaps>
+                    <ContainerStructurePlaceMaps>
+                      <h2>Endereço</h2>
 
-                    <button type="submit">Enviar avaliação</button>
-                  </FooterFormModalAddEvaluation>
-                </form>
-              </BodyModalAddEvaluation>
-            </ContentModalAddEvaluation>
-          </DialogModalAddEvaluation>
-        </ContainerModalAddEvaluation>
-      )}
+                      <a
+                        href="https://www.google.com/maps/place/37.1362+-8.5377"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <span>Ver no Google Maps</span>
+                      </a>
+                    </ContainerStructurePlaceMaps>
+                    <hr />
 
-      {modalSeeEvaluation && (
-        <ContainerModalSeeEvaluation>
-          <DialogModalSeeEvaluation>
-            <ContentModalSeeEvaluation>
-              <HeaderModalSeeEvaluation>
-                <div>
-                  <span>Nota {handleEvaluationAverage}</span>
+                    <ContentPlaceMaps>
+                      <div>
+                        <MapContainer
+                          center={[37.1362, -8.5377]}
+                          zoom={14}
+                          scrollWheelZoom={false}
+                          style={{ height: 180, borderRadius: 10 }}
+                          maxZoom={18}
+                        >
+                          <TileLayer
+                            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                        </MapContainer>
+                      </div>
+                    </ContentPlaceMaps>
 
-                  <span>
-                    <FiMessageSquare size={22} color="#617480" />
-                    {evaluations.length} comentários
-                  </span>
-                </div>
+                    <ContentPlaceAddress>{place.address}</ContentPlaceAddress>
+                  </ContainerPlaceMaps>
 
-                <div>
-                  <span
-                    onClick={() => {
-                      handleToggleModalSeeEvaluation();
-                      handleToggleModalAddEvaluation();
-                    }}
-                  >
-                    Adicionar avaliação
-                  </span>
-
-                  <span onClick={handleToggleModalSeeEvaluation}>
-                    <AiOutlineClose size={22} color="#A0ACB2" />
-                  </span>
-                </div>
-              </HeaderModalSeeEvaluation>
-              <BodyModalSeeEvaluation>
-                <ContainerPlaceRatingCommentsModalSeeEvaluation>
-                  {evaluations.map((evaluation: EvaluationsProps) => (
-                    <ContentPlaceRatingComment key={evaluation.id}>
-                      <PlaceRatingCommentLeftImage>
-                        <img src={evaluation.avatar} alt={evaluation.name} />
-                      </PlaceRatingCommentLeftImage>
-                      <PlaceRatingCommentInformation>
-                        <PlaceRatingCommentHeader>
-                          <div>{evaluation.name}</div>
-                        </PlaceRatingCommentHeader>
-                        <PlaceRatingCommentContent>
-                          {evaluation.description}
+                  {Object.keys(evaluations).length !== 0 && (
+                    <ContainerPlaceRating>
+                      <ContentStructurePlaceRating>
+                        <div>
+                          <h2>Avaliações</h2>
 
                           <div>
-                            {[1, 2, 3, 4, 5].map((value: number) => {
-                              return evaluation.rating >= value ? (
-                                <span key={value}>
-                                  <AiFillStar size={22} color="#F25D27" />
-                                </span>
-                              ) : (
-                                <span key={value}>
-                                  <AiOutlineStar size={22} color="#F25D27" />
-                                </span>
-                              );
-                            })}
+                            <AiFillStar size={22} color="#F25D27" />
+                            <span>{handleEvaluationAverage}</span>
                           </div>
-                        </PlaceRatingCommentContent>
-                      </PlaceRatingCommentInformation>
-                    </ContentPlaceRatingComment>
-                  ))}
-                </ContainerPlaceRatingCommentsModalSeeEvaluation>
-              </BodyModalSeeEvaluation>
-            </ContentModalSeeEvaluation>
-          </DialogModalSeeEvaluation>
-        </ContainerModalSeeEvaluation>
-      )}
+                        </div>
 
-      {notificationSendEvaluation && (
-        <ContainerNotificationSendEvaluation>
-          <DialogModalNotificationSendEvaluation>
-            <ContentNotificationSendEvaluation>
-              <img src={emojiSmile} alt="Smile emoji" />
-              <h1>Avaliação enviada!</h1>
-              <span>Agradecemos pelo seu tempo e colaboração.</span>
+                        <div>
+                          <span onClick={handleToggleModalAddEvaluation}>
+                            Adicionar
+                          </span>
+                          <span onClick={handleToggleModalSeeEvaluation}>
+                            Ver todas
+                          </span>
+                        </div>
+                      </ContentStructurePlaceRating>
+                      <hr />
 
-              <button onClick={handleToggleNotificationSendEvaluation}>
-                Disponha :)
-              </button>
-            </ContentNotificationSendEvaluation>
-          </DialogModalNotificationSendEvaluation>
-        </ContainerNotificationSendEvaluation>
+                      <ContainerPlaceRatingComments>
+                        {evaluations.map((evaluation: EvaluationsProps) => (
+                          <ContentPlaceRatingComment key={evaluation.id}>
+                            <PlaceRatingCommentLeftImage>
+                              <img
+                                src={evaluation.avatar}
+                                alt={evaluation.name}
+                              />
+                            </PlaceRatingCommentLeftImage>
+                            <PlaceRatingCommentInformation>
+                              <PlaceRatingCommentHeader>
+                                <div>{evaluation.name}</div>
+
+                                <div>
+                                  {[1, 2, 3, 4, 5].map((value: number) => {
+                                    return evaluation.rating >= value ? (
+                                      <span key={value}>
+                                        <AiFillStar size={22} color="#F25D27" />
+                                      </span>
+                                    ) : (
+                                      <span key={value}>
+                                        <AiOutlineStar
+                                          size={22}
+                                          color="#F25D27"
+                                        />
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </PlaceRatingCommentHeader>
+                              <PlaceRatingCommentContent>
+                                {evaluation.description}
+                              </PlaceRatingCommentContent>
+                            </PlaceRatingCommentInformation>
+                          </ContentPlaceRatingComment>
+                        ))}
+                      </ContainerPlaceRatingComments>
+                    </ContainerPlaceRating>
+                  )}
+                </ContentPlaceInformation>
+              </ContainerStructurePlaceInformation>
+            </StructurePlaceInformation>
+
+            <PlaceBackground image={place.image} />
+            <PlaceIcon>
+              {place.category === 1 ? (
+                <FiCoffee size={26} color="#F25D27" />
+              ) : place.category === 2 ? (
+                <FiCamera size={26} color="#F25D27" />
+              ) : (
+                <FiCalendar size={26} color="#F25D27" />
+              )}
+            </PlaceIcon>
+          </ContainerPlaceInformation>
+
+          {modalAddEvaluation && (
+            <ContainerModalAddEvaluation>
+              <DialogModalAddEvaluation>
+                <ContentModalAddEvaluation>
+                  <HeaderModalAddEvaluation>
+                    <h2>Adicionar avaliação</h2>
+
+                    <div onClick={handleToggleModalAddEvaluation}>
+                      <AiOutlineClose size={22} color="#A0ACB2" />
+                    </div>
+                  </HeaderModalAddEvaluation>
+                  <BodyModalAddEvaluation>
+                    <form onSubmit={handleSubmitModalAddEvaluation}>
+                      <FirstLineModalAddEvaluation
+                        fileUploaded={
+                          formModalAddEvaluation.image ? true : false
+                        }
+                      >
+                        <div>
+                          {!formModalAddEvaluation.image ? (
+                            <label htmlFor="file-upload">
+                              Upload da sua foto
+                            </label>
+                          ) : (
+                            <label htmlFor="file-upload">
+                              <span>Feito!</span>
+                              <span>Trocar foto</span>
+                            </label>
+                          )}
+                          <input
+                            id="file-upload"
+                            type="file"
+                            onChange={(event) =>
+                              handleFormModalAddEvaluation(3, event)
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <input
+                            name="name"
+                            type="text"
+                            placeholder="Seu nome completo"
+                            onChange={(event) =>
+                              handleFormModalAddEvaluation(1, event)
+                            }
+                            value={formModalAddEvaluation.name}
+                          />
+                        </div>
+                      </FirstLineModalAddEvaluation>
+
+                      <SecondLineModalAddEvaluation
+                        maxCharacther={
+                          formModalAddEvaluation.description.length > 240
+                            ? true
+                            : false
+                        }
+                      >
+                        <textarea
+                          name="description"
+                          placeholder="Escreva aqui..."
+                          rows={6}
+                          onChange={(event) =>
+                            handleFormModalAddEvaluation(2, event)
+                          }
+                        ></textarea>
+                        <span>
+                          {formModalAddEvaluation.description.length !== 0 &&
+                            `(${formModalAddEvaluation.description.length})  `}
+                          Máximo 240 caracteres
+                        </span>
+                      </SecondLineModalAddEvaluation>
+
+                      <ThirdLineModalAddEvaluation>
+                        <span>Sua nota de 1 a 5</span>
+
+                        <ContainerRatingAddEvaluation>
+                          {[1, 2, 3, 4, 5].map((value: number) => (
+                            <ContentRatingAddEvaluation
+                              firstItem={value === 1 ? true : false}
+                              lastItem={value === 5 ? true : false}
+                              checked={
+                                formModalAddEvaluation.evaluation >= value
+                                  ? true
+                                  : false
+                              }
+                              onClick={() => handleEvalutionModalAdd(value)}
+                            >
+                              <AiOutlineStar
+                                size={22}
+                                color={
+                                  formModalAddEvaluation.evaluation >= value
+                                    ? "#F25D27"
+                                    : "#A0ACB2"
+                                }
+                                key={value}
+                              />
+                            </ContentRatingAddEvaluation>
+                          ))}
+                        </ContainerRatingAddEvaluation>
+                      </ThirdLineModalAddEvaluation>
+
+                      <FooterFormModalAddEvaluation>
+                        <div>
+                          <FiInfo size={26} color="#F25D27" />
+
+                          <span>
+                            Sua avaliação será analisada para poder ser
+                            publicada.
+                          </span>
+                        </div>
+
+                        <button type="submit">Enviar avaliação</button>
+                      </FooterFormModalAddEvaluation>
+                    </form>
+                  </BodyModalAddEvaluation>
+                </ContentModalAddEvaluation>
+              </DialogModalAddEvaluation>
+            </ContainerModalAddEvaluation>
+          )}
+
+          {modalSeeEvaluation && (
+            <ContainerModalSeeEvaluation>
+              <DialogModalSeeEvaluation>
+                <ContentModalSeeEvaluation>
+                  <HeaderModalSeeEvaluation>
+                    <div>
+                      <span>Nota {handleEvaluationAverage}</span>
+
+                      <span>
+                        <FiMessageSquare size={22} color="#617480" />
+                        {evaluations.length} comentários
+                      </span>
+                    </div>
+
+                    <div>
+                      <span
+                        onClick={() => {
+                          handleToggleModalSeeEvaluation();
+                          handleToggleModalAddEvaluation();
+                        }}
+                      >
+                        Adicionar avaliação
+                      </span>
+
+                      <span onClick={handleToggleModalSeeEvaluation}>
+                        <AiOutlineClose size={22} color="#A0ACB2" />
+                      </span>
+                    </div>
+                  </HeaderModalSeeEvaluation>
+                  <BodyModalSeeEvaluation>
+                    <ContainerPlaceRatingCommentsModalSeeEvaluation>
+                      {evaluations.map((evaluation: EvaluationsProps) => (
+                        <ContentPlaceRatingComment key={evaluation.id}>
+                          <PlaceRatingCommentLeftImage>
+                            <img
+                              src={evaluation.avatar}
+                              alt={evaluation.name}
+                            />
+                          </PlaceRatingCommentLeftImage>
+                          <PlaceRatingCommentInformation>
+                            <PlaceRatingCommentHeader>
+                              <div>{evaluation.name}</div>
+                            </PlaceRatingCommentHeader>
+                            <PlaceRatingCommentContent>
+                              {evaluation.description}
+
+                              <div>
+                                {[1, 2, 3, 4, 5].map((value: number) => {
+                                  return evaluation.rating >= value ? (
+                                    <span key={value}>
+                                      <AiFillStar size={22} color="#F25D27" />
+                                    </span>
+                                  ) : (
+                                    <span key={value}>
+                                      <AiOutlineStar
+                                        size={22}
+                                        color="#F25D27"
+                                      />
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </PlaceRatingCommentContent>
+                          </PlaceRatingCommentInformation>
+                        </ContentPlaceRatingComment>
+                      ))}
+                    </ContainerPlaceRatingCommentsModalSeeEvaluation>
+                  </BodyModalSeeEvaluation>
+                </ContentModalSeeEvaluation>
+              </DialogModalSeeEvaluation>
+            </ContainerModalSeeEvaluation>
+          )}
+
+          {notificationSendEvaluation && (
+            <ContainerNotificationSendEvaluation>
+              <DialogModalNotificationSendEvaluation>
+                <ContentNotificationSendEvaluation>
+                  <img src={emojiSmile} alt="Smile emoji" />
+                  <h1>Avaliação enviada!</h1>
+                  <span>Agradecemos pelo seu tempo e colaboração.</span>
+
+                  <button onClick={handleToggleNotificationSendEvaluation}>
+                    Disponha :)
+                  </button>
+                </ContentNotificationSendEvaluation>
+              </DialogModalNotificationSendEvaluation>
+            </ContainerNotificationSendEvaluation>
+          )}
+        </Container>
       )}
-    </Container>
+    </>
   );
 };
 

@@ -40,6 +40,23 @@ citiesRouter.get("/", (request, response) => {
   });
 });
 
+citiesRouter.get("/:id", (request, response) => {
+  const { id } = request.params;
+
+  conn.query(`SELECT * FROM cities WHERE id='${id}'`, (error, result) => {
+    if (error) {
+      return response.status(400).send({
+        error,
+        error_message: "Error on get city",
+      });
+    }
+
+    if (!result[0]) response.status(404).send();
+
+    response.status(200).send(result[0]);
+  });
+});
+
 citiesRouter.post("/create", (request, response) => {
   uploadCityImage(request, response, (err: String) => {
     if (err instanceof multer.MulterError) {

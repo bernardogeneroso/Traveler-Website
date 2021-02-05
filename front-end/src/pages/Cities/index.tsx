@@ -60,12 +60,7 @@ const Citites: React.FC = () => {
           {cities ? (
             cities.map((city, i) => (
               <Link
-                to={{
-                  pathname: `/city/${city.name}`,
-                  state: {
-                    cityInformation: city,
-                  },
-                }}
+                to={`/city/${city.id}`}
                 style={{
                   textDecoration: "none",
                   flexBasis: 0,
