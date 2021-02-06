@@ -28,6 +28,7 @@ const uploadImage = multer({
     const ext = file.mimetype.split("/")[1];
     const typePermit = ["png", "jpg", "jpeg"];
     if (!typePermit.includes(ext)) {
+      // @ts-ignore
       cb("Type not allowed!", false);
     }
     cb(null, true);
