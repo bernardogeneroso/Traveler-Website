@@ -1,12 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CgSpinnerTwo } from "react-icons/cg";
 import { Link, useParams, useHistory } from "react-router-dom";
-import { FiCamera, FiCoffee, FiCalendar, FiInfo } from "react-icons/fi";
+import {
+  FiCamera,
+  FiCoffee,
+  FiCalendar,
+  FiInfo,
+  FiEdit3,
+  FiTrash,
+} from "react-icons/fi";
+
 import { AiFillStar } from "react-icons/ai";
 
 import Header from "../../components/Main/Header";
+import HeaderAdmin from "../../components/Main/HeaderAdmin";
+import MenuAdmin from "../../components/Main/MenuAdmin";
 import { CityProps } from "../Cities";
 import api from "../../services/api";
+import { useAuth } from "../../hooks/Auth";
 
 import englishBeach from "../../assets/city/praia_dos_ingleses.jpg";
 
@@ -35,6 +46,7 @@ import {
   PlacesFilter,
   ContainerAllPlaces,
   ContentAllPlaces,
+  ContainerOptionsPlace,
 } from "./styles";
 
 export interface PlaceProps {
@@ -54,6 +66,7 @@ interface ParamsProps {
 }
 
 const City = () => {
+  const { user } = useAuth();
   const params = useParams<ParamsProps>();
   const history = useHistory();
 
@@ -131,7 +144,15 @@ const City = () => {
         </ContainerLoading>
       ) : (
         <Container>
-          <Header restrict lastPage="cities" middleContent="city" />
+          {!!user ? (
+            <>
+              <MenuAdmin />
+              <HeaderAdmin cityId={city.id} lastPage="cities" />
+            </>
+          ) : (
+            <Header restrict lastPage="cities" middleContent="city" />
+          )}
+
           <ContainerBackground>
             <Background image={city.image} />
           </ContainerBackground>
@@ -191,30 +212,30 @@ const City = () => {
                 <h2>Top avaliados</h2>
                 <ContainerTops>
                   {places.map((place: PlaceProps) => (
-                    <Link
-                      to={`/place/${place.id}`}
-                      style={{
-                        textDecoration: "none",
-                      }}
-                      key={place.id}
-                    >
-                      <ContentTopRating>
-                        <img src={place.image} alt={place.name} />
+                    <ContentTopRating key={place.id}>
+                      <img src={place.image} alt={place.name} />
 
+                      <Link
+                        to={`/place/${place.id}`}
+                        style={{
+                          textDecoration: "none",
+                        }}
+                        className="informations"
+                      >
                         <h3>{place.name}</h3>
 
                         {place.category === 1 ? (
-                          <div>
-                            Comida e Bebida{" "}
-                            <FiCoffee size={20} color="#F25D27" />{" "}
+                          <div className="category">
+                            Comida e Bebida
+                            <FiCoffee size={20} color="#F25D27" />
                           </div>
                         ) : place.category === 2 ? (
-                          <div>
-                            Pontos Turísticos{" "}
+                          <div className="category">
+                            Pontos Turísticos
                             <FiCamera size={20} color="#F25D27" />
                           </div>
                         ) : (
-                          <div>
+                          <div className="category">
                             Eventos Organizados
                             <FiCalendar size={20} color="#F25D27" />
                           </div>
@@ -223,8 +244,19 @@ const City = () => {
                           <AiFillStar size={26} color="#fff" />
                           {place.rating}
                         </Rating>
-                      </ContentTopRating>
-                    </Link>
+                      </Link>
+
+                      {!!user && (
+                        <ContainerOptionsPlace>
+                          <div>
+                            <FiEdit3 size={20} color="#617480" />
+                          </div>
+                          <div>
+                            <FiTrash size={20} color="#617480" />
+                          </div>
+                        </ContainerOptionsPlace>
+                      )}
+                    </ContentTopRating>
                   ))}
                 </ContainerTops>
 
@@ -294,30 +326,30 @@ const City = () => {
 
                 <ContainerAllPlaces>
                   {placesFilter.map((place: PlaceProps) => (
-                    <Link
-                      to={`/place/${place.id}`}
-                      style={{
-                        textDecoration: "none",
-                      }}
-                      key={place.id}
-                    >
-                      <ContentAllPlaces>
-                        <img src={place.image} alt={place.name} />
+                    <ContentTopRating key={place.id} className="allPlaces">
+                      <img src={place.image} alt={place.name} />
 
+                      <Link
+                        to={`/place/${place.id}`}
+                        style={{
+                          textDecoration: "none",
+                        }}
+                        className="informations"
+                      >
                         <h3>{place.name}</h3>
 
                         {place.category === 1 ? (
-                          <div>
-                            Comida e Bebida{" "}
-                            <FiCoffee size={20} color="#F25D27" />{" "}
+                          <div className="category">
+                            Comida e Bebida
+                            <FiCoffee size={20} color="#F25D27" />
                           </div>
                         ) : place.category === 2 ? (
-                          <div>
-                            Pontos Turísticos{" "}
+                          <div className="category">
+                            Pontos Turísticos
                             <FiCamera size={20} color="#F25D27" />
                           </div>
                         ) : (
-                          <div>
+                          <div className="category">
                             Eventos Organizados
                             <FiCalendar size={20} color="#F25D27" />
                           </div>
@@ -326,8 +358,19 @@ const City = () => {
                           <AiFillStar size={26} color="#fff" />
                           {place.rating}
                         </Rating>
-                      </ContentAllPlaces>
-                    </Link>
+                      </Link>
+
+                      {!!user && (
+                        <ContainerOptionsPlace>
+                          <div>
+                            <FiEdit3 size={20} color="#617480" />
+                          </div>
+                          <div>
+                            <FiTrash size={20} color="#617480" />
+                          </div>
+                        </ContainerOptionsPlace>
+                      )}
+                    </ContentTopRating>
                   ))}
                 </ContainerAllPlaces>
               </ContainerPlacesFilter>

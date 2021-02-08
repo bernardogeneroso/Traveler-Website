@@ -79,7 +79,7 @@ placesRouter.get("/", (request, response) => {
 placesRouter.get("/:id", (request, response) => {
   const { id } = request.params;
 
-  conn.query(`SELECT * FROM places WHERE id='${id}'`, (error, result) => {
+  conn.query(`SELECT * FROM places WHERE id=?`, [id], (error, result) => {
     if (error) {
       return response.status(400).send({
         error,
@@ -124,7 +124,8 @@ placesRouter.post("/update/:id", (request, response) => {
       });
 
     conn.query(
-      `SELECT image FROM places WHERE id=${id}`,
+      `SELECT image FROM places WHERE id=?`,
+      [id],
       async (error, result) => {
         if (error) {
           return response.status(400).send({

@@ -80,9 +80,11 @@ const Header: React.FC<HeaderProps> = ({
         </ContainerMiddle>
 
         {restrict && (
-          <ContainerRestrictAccess>
-            <button>Acesso restrito</button>
-          </ContainerRestrictAccess>
+          <Link to="/signin">
+            <ContainerRestrictAccess>
+              <button>Acesso restrito</button>
+            </ContainerRestrictAccess>
+          </Link>
         )}
       </ContainerStructure>
     </Container>

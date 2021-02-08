@@ -7,7 +7,7 @@ const authenticateToken = (
   resp: Response,
   nextFunction: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.params.authorization;
   if (!authHeader) return resp.status(401).send("JWT token is missing");
 
   const [, token] = authHeader.split(" ");

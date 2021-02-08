@@ -6,6 +6,8 @@ import Cities from "../pages/Cities";
 import City from "../pages/City";
 import Place from "../pages/Place";
 
+import SignIn from "../pages/SignIn";
+
 const Routes: React.FC = () => {
   return (
     <Switch>
@@ -13,6 +15,8 @@ const Routes: React.FC = () => {
       <Route path="/cities" component={Cities} />
       <Route path="/city/:id" component={City} />
       <Route path="/place/:id" component={Place} />
+
+      <Route path="/signin" component={SignIn} />
 
       <Route
         path="*"

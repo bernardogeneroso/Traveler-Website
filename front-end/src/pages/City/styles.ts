@@ -1,4 +1,5 @@
 import styled, { keyframes } from "styled-components";
+import { shade } from "polished";
 
 interface BackgroundProps {
   image: string;
@@ -190,6 +191,7 @@ export const ContainerTops = styled.div`
 
 export const ContentTopRating = styled.div`
   flex-basis: 0px;
+  flex-grow: 1;
   max-width: 100%;
   position: relative;
   padding-right: 26px;
@@ -201,15 +203,18 @@ export const ContentTopRating = styled.div`
   margin-bottom: 16px;
   position: relative;
 
-  cursor: pointer;
+  &.allPlaces {
+    margin-bottom: 36px;
+  }
 
-  transition: all ease 0.4s;
-
-  &:hover {
-    transform: scale(0.9);
+  .informations {
+    &:hover {
+      background: ${shade(0.04, "#F5F8FA")};
+    }
   }
 
   img {
+    object-fit: cover;
     height: 164px;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
@@ -224,7 +229,7 @@ export const ContentTopRating = styled.div`
     border-right: 1px solid #dce2e5;
   }
 
-  div {
+  .category {
     padding: 20px;
 
     display: flex;
@@ -378,7 +383,8 @@ export const ContainerAllPlaces = styled.div`
 `;
 
 export const ContentAllPlaces = styled.div`
-  flex-basis: 0px;
+  flex-basis: 0;
+  flex-grow: 1;
   max-width: 100%;
   position: relative;
   padding-right: 26px;
@@ -390,14 +396,6 @@ export const ContentAllPlaces = styled.div`
   margin-bottom: 16px;
   margin-top: 20px;
   position: relative;
-
-  cursor: pointer;
-
-  transition: all ease 0.4s;
-
-  &:hover {
-    transform: scale(0.9);
-  }
 
   img {
     height: 164px;
@@ -428,5 +426,49 @@ export const ContentAllPlaces = styled.div`
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
     color: #617480;
+  }
+`;
+
+export const ContainerOptionsPlace = styled.div`
+  position: absolute;
+  top: 12px;
+  right: 40px;
+  display: flex;
+  flex-direction: row;
+
+  div {
+    cursor: pointer;
+  }
+
+  div:nth-child(1):hover,
+  div:nth-child(2):hover {
+    background: ${shade(0.06, "#fff")};
+  }
+
+  div:nth-child(1) {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #dce2e5;
+    background: #fff;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+
+    display: flex;
+    place-content: center;
+    align-items: center;
+  }
+
+  div:nth-child(2) {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #dce2e5;
+    background: #fff;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    margin-left: 10px;
+
+    display: flex;
+    place-content: center;
+    align-items: center;
   }
 `;

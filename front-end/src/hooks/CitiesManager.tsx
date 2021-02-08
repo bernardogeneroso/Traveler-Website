@@ -13,6 +13,7 @@ interface CitiesManagerData {
   cities: CityProps[];
   searchCities: string;
   filterOption: number;
+  loading: boolean;
   filterOptions(option: number): void;
   searchFilter(event: React.FormEvent<HTMLInputElement>): void;
   cleanSearchFilter(): void;
@@ -22,6 +23,7 @@ const CitiesManager = createContext<CitiesManagerData>({} as CitiesManagerData);
 
 const CitiesProvider: React.FC = ({ children }) => {
   const [cities, setCities] = useState<CityProps[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [filterOption, setFilterOption] = useState<number>(() => {
     const filterOptionStorage = localStorage.getItem("Traveler:filterOption");
 
@@ -39,6 +41,7 @@ const CitiesProvider: React.FC = ({ children }) => {
   useEffect(() => {
     api.get("/cities").then((response) => {
       setCities(response.data);
+      setLoading(false);
     });
   }, []);
 
@@ -108,6 +111,7 @@ const CitiesProvider: React.FC = ({ children }) => {
         cities,
         searchCities,
         filterOption,
+        loading,
         filterOptions,
         searchFilter,
         cleanSearchFilter,

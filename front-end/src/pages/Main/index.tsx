@@ -52,7 +52,7 @@ const Main: React.FC = () => {
 
                 <div>
                   <h3>{city.name}</h3>
-                  <span>98 locais</span>
+                  <span>{Math.floor(Math.random() * 100)} locais</span>
                 </div>
               </ContentCity>
             ))}

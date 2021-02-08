@@ -35,20 +35,25 @@ usersRouter.post("/create", (request, response) => {
   }
 });
 
-usersRouter.get("/sessions", (request, response) => {
+usersRouter.post("/sessions", (request, response) => {
   const { email, password } = request.body;
 
   try {
     conn.query(
       `SELECT * FROM users WHERE email=?`,
       [email],
-      (error, result) => {
+      async (error, result) => {
         if (error) {
           return response.status(400).send({
             error,
             error_message: "Error on get data of user",
           });
         }
+
+        if (!result[0])
+          return response.status(400).send({
+            error_message: "Error on authentication",
+          });
 
         const user = result[0];
 
@@ -57,7 +62,7 @@ usersRouter.get("/sessions", (request, response) => {
 
         const token = jwt.sign({ user_id: user.id }, secret, { expiresIn });
 
-        const passwordCheck = bcrypt.compareSync(password, user.password);
+        const passwordCheck = await bcrypt.compareSync(password, user.password);
 
         if (!passwordCheck) {
           response.status(400).send({
