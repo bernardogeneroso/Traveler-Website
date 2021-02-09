@@ -1,5 +1,9 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { shade } from "polished";
+
+interface ContainerLeftProps {
+  placeActive: boolean;
+}
 
 export const Container = styled.div`
   width: 100%;
@@ -27,20 +31,32 @@ export const ContainerMiddle = styled.div`
   color: #a0acb2;
 `;
 
-export const ContainerLeft = styled.div`
+export const ContainerLeft = styled.div<ContainerLeftProps>`
+  ${(props) =>
+    props.placeActive &&
+    css`
+      max-width: 499px;
+      width: 100%;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    `}
+
   h1 {
     font-size: 36px;
     font-weight: 600;
     color: #123952;
   }
 
-  div {
+  .lastPage {
     display: flex;
     align-items: center;
 
     padding: 12px;
     border-radius: 10px;
     border: 1px solid #dce2e5;
+    width: 48px;
 
     transition: all ease 0.2s;
 
@@ -52,21 +68,22 @@ export const ContainerLeft = styled.div`
   }
 `;
 
-export const ContainerRight = styled.div`
+export const ContainerOptions = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
 
-  div {
+  .edit,
+  .trash {
     cursor: pointer;
   }
 
-  div:nth-child(1):hover,
-  div:nth-child(2):hover {
+  .edit:hover,
+  .trash:hover {
     background: ${shade(0.06, "#fff")};
   }
 
-  div:nth-child(1) {
+  .edit {
     width: 40px;
     height: 40px;
     border: 1px solid #dce2e5;
@@ -79,7 +96,7 @@ export const ContainerRight = styled.div`
     align-items: center;
   }
 
-  div:nth-child(2) {
+  .trash {
     width: 40px;
     height: 40px;
     border: 1px solid #dce2e5;
@@ -106,5 +123,23 @@ export const ContainerRight = styled.div`
     &:hover {
       background: ${shade(0.06, "#51b853")};
     }
+  }
+`;
+
+export const ContainerStages = styled.div`
+  color: #a0acb3;
+  font-weight: 700;
+  font-size: 12px;
+
+  .focus {
+    color: #617480;
+  }
+
+  span:nth-child(1) {
+    margin-right: 6px;
+  }
+
+  span:nth-child(2) {
+    margin-left: 6px;
   }
 `;

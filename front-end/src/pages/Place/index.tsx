@@ -13,8 +13,11 @@ import { getDay, getDate, getYear, getMonth, addWeeks } from "date-fns";
 import { MapContainer, TileLayer } from "react-leaflet";
 
 import Header from "../../components/Main/Header";
+import HeaderAdmin from "../../components/Main/HeaderAdmin";
+import MenuAdmin from "../../components/Main/MenuAdmin";
 import { PlaceProps } from "../City";
 import api from "../../services/api";
+import { useAuth } from "../../hooks/Auth";
 
 import emojiSmile from "../../assets/places/emoji_smile.png";
 
@@ -91,6 +94,7 @@ interface ParamsProps {
 }
 
 const Place = () => {
+  const { user } = useAuth();
   const params = useParams<ParamsProps>();
   const history = useHistory();
 
@@ -339,7 +343,17 @@ const Place = () => {
             }
           >
             <StructurePlaceInformation>
-              <Header lastPage={`city/${place.city_id}`} />
+              {!!user ? (
+                <>
+                  <MenuAdmin />
+                  <HeaderAdmin
+                    lastPage={`city/${place.city_id}`}
+                    placeId={place.id}
+                  />
+                </>
+              ) : (
+                <Header lastPage={`city/${place.city_id}`} />
+              )}
 
               <ContainerStructurePlaceInformation>
                 <ContentPlaceInformation>
@@ -536,7 +550,7 @@ const Place = () => {
           </ContainerPlaceInformation>
 
           {modalAddEvaluation && (
-            <ContainerModalAddEvaluation>
+            <ContainerModalAddEvaluation key="modalAddEvaluation">
               <DialogModalAddEvaluation>
                 <ContentModalAddEvaluation>
                   <HeaderModalAddEvaluation>
@@ -657,7 +671,7 @@ const Place = () => {
           )}
 
           {modalSeeEvaluation && (
-            <ContainerModalSeeEvaluation>
+            <ContainerModalSeeEvaluation key="modalSeeEvaluation">
               <DialogModalSeeEvaluation>
                 <ContentModalSeeEvaluation>
                   <HeaderModalSeeEvaluation>
@@ -730,7 +744,7 @@ const Place = () => {
           )}
 
           {notificationSendEvaluation && (
-            <ContainerNotificationSendEvaluation>
+            <ContainerNotificationSendEvaluation key="notificationSendEvaluation">
               <DialogModalNotificationSendEvaluation>
                 <ContentNotificationSendEvaluation>
                   <img src={emojiSmile} alt="Smile emoji" />

@@ -79,7 +79,6 @@ export const Container = styled.div<ContainerProps>`
   left: 0;
   bottom: 0;
   right: 0;
-  overflow: ${(props) => (props.overflowHidden ? "hidden" : "auto")};
 `;
 
 export const ContainerPlaceInformation = styled.div<ContainerPlaceInformationProps>`

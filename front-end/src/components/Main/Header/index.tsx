@@ -22,9 +22,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({
-  restrict,
+  restrict = false,
   lastPage,
-  middleContent,
+  middleContent = "none",
 }) => {
   const { searchCities, searchFilter, cleanSearchFilter } = useCities();
 

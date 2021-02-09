@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FiPower, FiMapPin, FiGrid, FiMessageSquare } from "react-icons/fi";
 
 import { useAuth } from "../../../hooks/Auth";
 
-import { Container, Content, ContainerOptions } from "./styles";
+import {
+  Container,
+  Content,
+  ContainerOptions,
+  ContainerModalLeave,
+  DialogModalLeave,
+  ContentModalLeave,
+} from "./styles";
 
 import logo from "../../../assets/menuadmin/logo.png";
 
@@ -12,6 +19,12 @@ const MenuAdmin = () => {
   const { signOut } = useAuth();
 
   const [optionSelected, setOptionSelected] = useState<number>(1);
+  const [modalLeave, setModalLeave] = useState<boolean>(false);
+  const [buttonLeave, setButtonLeave] = useState<number>(1);
+
+  const handleToggleModalLeave = useCallback(() => {
+    setModalLeave((state) => !state);
+  }, []);
 
   return (
     <Container>
@@ -45,8 +58,39 @@ const MenuAdmin = () => {
           </Link>
         </ContainerOptions>
 
-        <FiPower size={24} color="#fff" className="power" onClick={signOut} />
+        <FiPower
+          size={24}
+          color="#fff"
+          className="power"
+          onClick={handleToggleModalLeave}
+        />
       </Content>
+
+      {modalLeave && (
+        <ContainerModalLeave key="modalLeave">
+          <DialogModalLeave>
+            <ContentModalLeave buttonAnimation={buttonLeave}>
+              <span>Você quer mesmo sair?</span>
+              <div>
+                <button
+                  onClick={handleToggleModalLeave}
+                  onMouseEnter={() => setButtonLeave(2)}
+                  onMouseLeave={() => setButtonLeave(1)}
+                >
+                  Não
+                </button>
+                <button
+                  onClick={signOut}
+                  onMouseEnter={() => setButtonLeave(2)}
+                  onMouseLeave={() => setButtonLeave(1)}
+                >
+                  Sim
+                </button>
+              </div>
+            </ContentModalLeave>
+          </DialogModalLeave>
+        </ContainerModalLeave>
+      )}
     </Container>
   );
 };

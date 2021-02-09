@@ -55,7 +55,7 @@ const Citites: React.FC = () => {
           {user ? (
             <>
               <MenuAdmin />
-              <HeaderAdmin />
+              <HeaderAdmin cityName="Cidades" buttonPosition="cities/stage01" />
             </>
           ) : (
             <Header restrict middleContent="search" />

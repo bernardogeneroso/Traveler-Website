@@ -45,7 +45,6 @@ import {
   ContentPlacesFilter,
   PlacesFilter,
   ContainerAllPlaces,
-  ContentAllPlaces,
   ContainerOptionsPlace,
 } from "./styles";
 
@@ -65,7 +64,7 @@ interface ParamsProps {
   id: string;
 }
 
-const City = () => {
+const City: React.FC = () => {
   const { user } = useAuth();
   const params = useParams<ParamsProps>();
   const history = useHistory();
@@ -88,7 +87,7 @@ const City = () => {
       .catch(() => {
         history.push("/cities");
       });
-  }, [params, history]);
+  }, [history, params]);
 
   useEffect(() => {
     api
@@ -146,8 +145,12 @@ const City = () => {
         <Container>
           {!!user ? (
             <>
-              <MenuAdmin />
-              <HeaderAdmin cityId={city.id} lastPage="cities" />
+              <MenuAdmin key="menuAdmin" />
+              <HeaderAdmin
+                cityId={city.id}
+                lastPage="cities"
+                buttonPosition="city"
+              />
             </>
           ) : (
             <Header restrict lastPage="cities" middleContent="city" />

@@ -1,13 +1,8 @@
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import { shade } from "polished";
 
 interface BackgroundProps {
   image: string;
-}
-
-interface ContentInputProps {
-  position: "top" | "bottom";
-  icon?: boolean;
 }
 
 export const Container = styled.div`

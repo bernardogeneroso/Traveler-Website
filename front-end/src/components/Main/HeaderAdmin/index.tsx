@@ -7,47 +7,89 @@ import {
   ContainerStructure,
   ContainerMiddle,
   ContainerLeft,
-  ContainerRight,
+  ContainerOptions,
+  ContainerStages,
 } from "./styles";
 
 interface HeaderProps {
   lastPage?: string;
+  cityName?: string;
   middleContent?: string;
+  stage?: number;
   cityId?: number;
+  placeId?: number;
+  buttonPosition?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ lastPage, middleContent, cityId }) => {
+const Header: React.FC<HeaderProps> = ({
+  lastPage,
+  cityName,
+  middleContent,
+  stage,
+  cityId,
+  placeId,
+  buttonPosition,
+}) => {
   return (
     <Container>
       <ContainerStructure>
-        <ContainerLeft>
-          {lastPage ? (
+        <ContainerLeft placeActive={placeId ? true : false}>
+          {lastPage && (
             <Link to={`/${lastPage}`}>
-              <div>
+              <div className="lastPage">
                 <FiArrowLeft size={22} color="#A0ACB2" />
               </div>
             </Link>
-          ) : (
-            <h1>Cidades</h1>
           )}
-        </ContainerLeft>
 
-        {middleContent && <ContainerMiddle>{middleContent}</ContainerMiddle>}
+          {cityName && <h1>{cityName}</h1>}
 
-        <ContainerRight>
-          {cityId && (
-            <>
+          {placeId && (
+            <ContainerOptions>
               <div>
                 <FiEdit3 size={20} color="#617480" />
               </div>
               <div>
                 <FiTrash size={20} color="#617480" />
               </div>
+            </ContainerOptions>
+          )}
+        </ContainerLeft>
+
+        {middleContent && <ContainerMiddle>{middleContent}</ContainerMiddle>}
+
+        <ContainerOptions>
+          {cityId && (
+            <>
+              <div className="edit">
+                <FiEdit3 size={20} color="#617480" />
+              </div>
+              <div className="trash">
+                <FiTrash size={20} color="#617480" />
+              </div>
             </>
           )}
 
-          <button>+ Adicionar um perfil</button>
-        </ContainerRight>
+          {buttonPosition && (
+            <Link to={`/${buttonPosition}/create`}>
+              <button>
+                +{" "}
+                {buttonPosition === "cities"
+                  ? "Adicionar uma cidade"
+                  : buttonPosition === "city"
+                  ? "Adicionar um local"
+                  : "Adicionar uma categoria"}
+              </button>
+            </Link>
+          )}
+
+          {stage && (
+            <ContainerStages>
+              <span className={stage === 1 ? "focus" : ""}>01</span> -{" "}
+              <span className={stage === 2 ? "focus" : ""}>02</span>
+            </ContainerStages>
+          )}
+        </ContainerOptions>
       </ContainerStructure>
     </Container>
   );

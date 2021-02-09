@@ -208,6 +208,9 @@ export const ContentTopRating = styled.div`
   }
 
   .informations {
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+
     &:hover {
       background: ${shade(0.04, "#F5F8FA")};
     }
