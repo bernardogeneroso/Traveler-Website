@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { FiInfo } from "react-icons/fi";
+import { useHistory } from "react-router-dom";
 
 import HeaderAdmin from "../../../../components/Main/HeaderAdmin";
 import MenuAdmin from "../../../../components/Main/MenuAdmin";
@@ -19,6 +19,8 @@ interface FormProps {
 }
 
 const Stage01: React.FC = () => {
+  const history = useHistory();
+
   const [form, setForm] = useState<FormProps>({
     name: "",
     description: "",
@@ -49,6 +51,20 @@ const Stage01: React.FC = () => {
     }
   }, []);
 
+  const handleSubmit = useCallback(
+    (event) => {
+      event.preventDefault();
+
+      history.push({
+        pathname: "/cities/stage02/create",
+        state: {
+          city: form,
+        },
+      });
+    },
+    [history, form]
+  );
+
   return (
     <Container>
       <HeaderAdmin
@@ -60,7 +76,7 @@ const Stage01: React.FC = () => {
 
       <ContainerStructure>
         <ContainerContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <header>
               <div>01</div>
 
@@ -75,16 +91,18 @@ const Stage01: React.FC = () => {
               <hr />
 
               <div className="form-input">
-                <label htmlFor="name">Nome da cidade</label>
+                <label htmlFor="name">Nome da cidade *</label>
                 <input
+                  name="name"
                   id="name"
                   type="text"
                   onChange={(event) => handleForm(1, event)}
+                  required
                 />
               </div>
 
               <div className="form-image-upload">
-                <label>Foto da cidade</label>
+                <label>Foto da cidade *</label>
                 <div>
                   <label
                     htmlFor="file-upload"
@@ -95,19 +113,23 @@ const Stage01: React.FC = () => {
                       : "Foto adicionada, alterar foto"}
                   </label>
                   <input
+                    name="file"
                     id="file-upload"
                     type="file"
                     onChange={(event) => handleForm(3, event)}
+                    required
                   />
                 </div>
               </div>
 
               <div className="form-textarea">
-                <label htmlFor="description">Descrição da cidade</label>
+                <label htmlFor="description">Descrição da cidade *</label>
                 <textarea
+                  name="description"
                   id="description"
                   rows={10}
                   onChange={(event) => handleForm(2, event)}
+                  required
                 />
                 <span>
                   {form.description.length !== 0 &&
@@ -118,14 +140,12 @@ const Stage01: React.FC = () => {
 
               <footer>
                 <div>
-                  <FiInfo size={26} color="#F25D27" />
+                  <FiInfo size={36} color="#F25D27" />
 
                   <span>Preencha todos os dados com cuidado.</span>
                 </div>
 
-                <Link to="/cities/stage02/create">
-                  <button>Próximo</button>
-                </Link>
+                <button type="submit">Próximo</button>
               </footer>
             </Content>
           </form>

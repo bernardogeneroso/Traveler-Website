@@ -82,7 +82,9 @@ citiesRouter.post("/create", (request, response) => {
           });
         }
 
-        return response.status(200).send();
+        return response.status(200).send({
+          id: result.insertId,
+        });
       }
     );
   });

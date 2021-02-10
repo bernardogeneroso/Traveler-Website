@@ -204,6 +204,7 @@ export const Content = styled.div<ContentProps>`
       label {
         color: #f25d27;
         margin-bottom: 0;
+        cursor: pointer;
       }
 
       input[type="file"] {
