@@ -27,7 +27,7 @@ export const ContainerStructure = styled.div`
 
 export const ContainerMiddle = styled.div`
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 400;
   color: #a0acb2;
 `;
 
@@ -142,4 +142,10 @@ export const ContainerStages = styled.div`
   span:nth-child(2) {
     margin-left: 6px;
   }
+`;
+
+export const ContainercityEditName = styled.div`
+  font-size: 16px;
+  font-weight: 400;
+  color: #a0acb2;
 `;

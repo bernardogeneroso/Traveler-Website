@@ -2,14 +2,17 @@ import React from "react";
 import { Switch, Redirect, Route } from "react-router-dom";
 
 import Main from "../pages/Main";
-import Cities from "../pages/Cities";
+
 import City from "../pages/City";
+import CityEdit from "../pages/City/Edit";
+
+import Cities from "../pages/Cities";
+import CreateCityStage01 from "../pages/Cities/Create/Stage01";
+import CreateCityStage02 from "../pages/Cities/Create/Stage02";
+
 import Place from "../pages/Place";
 
 import SignIn from "../pages/SignIn";
-
-import CreateCityStage01 from "../pages/Cities/Create/Stage01";
-import CreateCityStage02 from "../pages/Cities/Create/Stage02";
 
 const Routes: React.FC = () => {
   return (
@@ -20,7 +23,8 @@ const Routes: React.FC = () => {
       <Route path="/cities/stage01/create" component={CreateCityStage01} />
       <Route path="/cities/stage02/create" component={CreateCityStage02} />
 
-      <Route path="/city/:id" component={City} />
+      <Route path="/city/:id" component={City} exact />
+      <Route path="/city/edit/:id" component={CityEdit} />
 
       <Route path="/place/:id" component={Place} />
 

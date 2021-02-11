@@ -17,7 +17,7 @@ export const Container = styled.div`
 `;
 
 export const ContainerStructure = styled.div`
-  max-width: 1120px;
+  max-width: 800px;
   margin: 0 auto;
   margin-top: 30px;
 `;
@@ -162,6 +162,8 @@ export const Content = styled.div<ContentProps>`
       padding: 12px 16px;
       resize: none;
       color: #123952;
+      font-size: 16px;
+      font-weight: 400;
     }
 
     span {

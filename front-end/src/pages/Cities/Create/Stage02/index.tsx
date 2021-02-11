@@ -176,6 +176,8 @@ const Stage02: React.FC<Props> = (props) => {
         return;
       }
 
+      if (form.description.length > 320) return;
+
       if (!form.categoryCheck) {
         setForm((state) => ({
           ...state,

@@ -5,6 +5,11 @@ import path from "path";
 import conn from "../services/db";
 import StorageMulter from "../configs/mullter";
 
+import fs from "fs";
+import { promisify } from "util";
+
+const unlinkAsyncCityImage = promisify(fs.unlink);
+
 const citiesRouter = express.Router();
 
 const uploadCityImage = multer({
@@ -55,6 +60,89 @@ citiesRouter.get("/:id", (request, response) => {
     if (!result[0]) response.status(404).send();
 
     response.status(200).send(result[0]);
+  });
+});
+
+citiesRouter.post("/update/:id", (request, response) => {
+  uploadCityImage(request, response, (err: String) => {
+    if (err instanceof multer.MulterError) {
+      return response.status(406).json(err);
+    } else if (err) {
+      return response.status(406).json(err);
+    }
+
+    const { id } = request.params;
+    const { name, description } = request.body;
+
+    if (!name || !description)
+      return response.status(400).send({
+        error: "Error, missing fields",
+      });
+
+    try {
+      const imageName = request.file.filename;
+
+      conn.query(
+        `SELECT image FROM cities WHERE id=?`,
+        [id],
+        async (error, result) => {
+          if (error) {
+            return response.status(400).send({
+              error,
+              error_message: "Error on update city",
+            });
+          }
+
+          const pathFolderCitiesImage = path.resolve(
+            __dirname,
+            "..",
+            "uploads",
+            "cities",
+            result[0].image.split("image/")[1]
+          );
+
+          try {
+            await unlinkAsyncCityImage(pathFolderCitiesImage);
+          } catch {
+            return response.status(400).send({
+              error: "Error on delete image",
+            });
+          }
+
+          const pathFile = `${process.env.HOST}cities/image/${imageName}`;
+
+          conn.query(
+            `UPDATE cities SET name=?, image=?, description=? WHERE id=?`,
+            [name, pathFile, description, id],
+            (error, result) => {
+              if (error) {
+                return response.status(400).send({
+                  error,
+                  error_message: "Error on update city",
+                });
+              }
+
+              return response.status(200).send();
+            }
+          );
+        }
+      );
+    } catch (err) {
+      conn.query(
+        `UPDATE cities SET name=?, description=? WHERE id=?`,
+        [name, description, id],
+        (error, result) => {
+          if (error) {
+            return response.status(400).send({
+              error,
+              error_message: "Error on update city",
+            });
+          }
+
+          return response.status(200).send();
+        }
+      );
+    }
   });
 });
 

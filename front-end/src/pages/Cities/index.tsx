@@ -117,7 +117,7 @@ const Citites: React.FC = () => {
 
             <ContainerCities>
               {cities ? (
-                cities.map((city, i) => (
+                cities.map((city) => (
                   <ContentCities
                     style={{
                       opacity:
@@ -141,9 +141,11 @@ const Citites: React.FC = () => {
 
                       {!!user && (
                         <ContainerOptionsCity>
-                          <div>
-                            <FiEdit3 size={20} color="#617480" />
-                          </div>
+                          <Link to={`/city/edit/${city.id}`}>
+                            <div>
+                              <FiEdit3 size={20} color="#617480" />
+                            </div>
+                          </Link>
                           <div onClick={() => handleSetModalRemoveCityID(city)}>
                             <FiTrash size={20} color="#617480" />
                           </div>

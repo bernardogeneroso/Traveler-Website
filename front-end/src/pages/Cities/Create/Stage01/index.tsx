@@ -55,6 +55,8 @@ const Stage01: React.FC = () => {
     (event) => {
       event.preventDefault();
 
+      if (form.description.length > 320) return;
+
       history.push({
         pathname: "/cities/stage02/create",
         state: {

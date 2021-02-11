@@ -12,11 +12,13 @@ import {
   ContainerLeft,
   ContainerOptions,
   ContainerStages,
+  ContainercityEditName,
 } from "./styles";
 
 interface HeaderProps {
   lastPage?: string;
   cityName?: string;
+  cityEditName?: string;
   middleContent?: string;
   stage?: number;
   city?: CityProps;
@@ -27,6 +29,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   lastPage,
   cityName,
+  cityEditName,
   middleContent,
   stage,
   city,
@@ -85,9 +88,11 @@ const Header: React.FC<HeaderProps> = ({
         <ContainerOptions>
           {city && (
             <>
-              <div className="edit">
-                <FiEdit3 size={20} color="#617480" />
-              </div>
+              <Link to={`/city/edit/${city.id}`}>
+                <div className="edit">
+                  <FiEdit3 size={20} color="#617480" />
+                </div>
+              </Link>
               <div
                 className="trash"
                 onClick={() => handleSetModalRemoveCityID(city)}
@@ -115,6 +120,10 @@ const Header: React.FC<HeaderProps> = ({
               <span className={stage === 1 ? "focus" : ""}>01</span> -{" "}
               <span className={stage === 2 ? "focus" : ""}>02</span>
             </ContainerStages>
+          )}
+
+          {cityEditName && (
+            <ContainercityEditName>{cityEditName}</ContainercityEditName>
           )}
         </ContainerOptions>
       </ContainerStructure>

@@ -15,6 +15,7 @@ interface CitiesManagerData {
   filterOption: number;
   loading: boolean;
   addCity(city: CityProps): void;
+  editCity(): void;
   removeCity(id: number): void;
   filterOptions(option: number): void;
   searchFilter(event: React.FormEvent<HTMLInputElement>): void;
@@ -111,6 +112,11 @@ const CitiesProvider: React.FC = ({ children }) => {
     setCities((state) => [...state, city]);
   }, []);
 
+  const editCity = useCallback(async () => {
+    const { data } = await api.get(`/cities`);
+    setCities(data);
+  }, []);
+
   const removeCity = useCallback(async (id: number) => {
     await api.delete(`/cities/remove/${id}`);
 
@@ -129,6 +135,7 @@ const CitiesProvider: React.FC = ({ children }) => {
         filterOption,
         loading,
         addCity,
+        editCity,
         removeCity,
         filterOptions,
         searchFilter,
