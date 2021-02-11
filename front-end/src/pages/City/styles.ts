@@ -104,6 +104,7 @@ export const AboutCityInformation = styled.div`
   }
 
   p {
+    overflow-wrap: anywhere;
     margin-top: 40px;
     font-weight: 400;
     color: #123952;

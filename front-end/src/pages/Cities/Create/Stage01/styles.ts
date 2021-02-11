@@ -104,6 +104,7 @@ export const ContainerContent = styled.div`
 
 export const Content = styled.div<ContentProps>`
   padding: 62px;
+  margin-bottom: 40px;
 
   h3 {
     color: #123952;

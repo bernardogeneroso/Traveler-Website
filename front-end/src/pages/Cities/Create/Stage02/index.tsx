@@ -15,6 +15,7 @@ import HeaderAdmin from "../../../../components/Main/HeaderAdmin";
 import MenuAdmin from "../../../../components/Main/MenuAdmin";
 import api from "../../../../services/api";
 import { useToast } from "../../../../hooks/Toast";
+import { useCities } from "../../../../hooks/CitiesManager";
 
 import {
   Container,
@@ -67,6 +68,7 @@ interface Props {
 const Stage02: React.FC<Props> = (props) => {
   const history = useHistory();
   const { addToast } = useToast();
+  const { addCity } = useCities();
 
   const [modalFormRegistered, setModalFormRegistered] = useState<boolean>(
     false
@@ -196,8 +198,15 @@ const Stage02: React.FC<Props> = (props) => {
         formDataCity.append("description", descriptionCity);
 
         const {
-          data: { id },
+          data: { id, image: pathImage },
         } = await api.post("/cities/create", formDataCity);
+
+        addCity({
+          id,
+          image: pathImage,
+          name: nameCity,
+          description: descriptionCity,
+        });
 
         addToast({
           title: "Cidade criada com sucesso",
@@ -243,7 +252,13 @@ const Stage02: React.FC<Props> = (props) => {
         });
       }
     },
-    [form, props.location.state?.city, addToast, handleToggleFormRegistered]
+    [
+      form,
+      props.location.state?.city,
+      addToast,
+      handleToggleFormRegistered,
+      addCity,
+    ]
   );
 
   return (
@@ -471,7 +486,7 @@ const Stage02: React.FC<Props> = (props) => {
                   center={[37.1362, -8.5377]}
                   zoom={14}
                   scrollWheelZoom={false}
-                  style={{ height: 180, borderRadius: 10 }}
+                  style={{ height: 180, borderRadius: 10, zIndex: 0 }}
                   maxZoom={18}
                 >
                   <TileLayer

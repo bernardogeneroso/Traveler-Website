@@ -129,7 +129,7 @@ export const ContainerCities = styled.div`
   flex: 1;
   flex-direction: row;
   flex-wrap: wrap;
-  width: calc(100% + 32px);
+  width: calc(100% + 36px);
   overflow-y: auto;
 
   margin-top: 30px;
@@ -142,16 +142,14 @@ export const ContentStructure = styled.div`
 
 export const ContentCities = styled.div`
   text-decoration: none;
-  flex-basis: 0;
-  flex-grow: 1;
   max-width: 100%;
   width: 100%;
-  padding-right: 26px;
-  padding-left: 0;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
 
+  margin-right: 39px;
   margin-bottom: 26px;
   width: 250px;
   border-bottom-left-radius: 20px;

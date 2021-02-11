@@ -147,7 +147,7 @@ const City: React.FC = () => {
             <>
               <MenuAdmin key="menuAdmin" />
               <HeaderAdmin
-                cityId={city.id}
+                city={city}
                 lastPage="cities"
                 buttonPosition="city"
               />

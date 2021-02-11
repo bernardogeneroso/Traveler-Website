@@ -84,9 +84,25 @@ citiesRouter.post("/create", (request, response) => {
 
         return response.status(200).send({
           id: result.insertId,
+          image: pathFile,
         });
       }
     );
+  });
+});
+
+citiesRouter.delete("/remove/:id", (request, response) => {
+  const { id } = request.params;
+
+  conn.query(`DELETE FROM cities WHERE id=?`, [id], (error, result) => {
+    if (error) {
+      return response.status(400).send({
+        error,
+        error_message: "Error on delete a city",
+      });
+    }
+
+    return response.status(200).send();
   });
 });
 

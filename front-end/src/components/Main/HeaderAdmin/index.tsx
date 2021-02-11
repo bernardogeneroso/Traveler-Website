@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FiEdit3, FiTrash, FiArrowLeft } from "react-icons/fi";
+
+import { CityProps } from "../../../pages/Cities";
+import ModalRemoveCity, { ModalRemoceCityProperties } from "../ModalRemoveCity";
 
 import {
   Container,
@@ -16,7 +19,7 @@ interface HeaderProps {
   cityName?: string;
   middleContent?: string;
   stage?: number;
-  cityId?: number;
+  city?: CityProps;
   placeId?: number;
   buttonPosition?: string;
 }
@@ -26,10 +29,31 @@ const Header: React.FC<HeaderProps> = ({
   cityName,
   middleContent,
   stage,
-  cityId,
+  city,
   placeId,
   buttonPosition,
 }) => {
+  const [
+    modalRemoveCity,
+    setModalRemoveCity,
+  ] = useState<ModalRemoceCityProperties>({
+    toggle: false,
+  });
+
+  const handleSetModalRemoveCityID = useCallback((city: CityProps) => {
+    setModalRemoveCity({
+      toggle: true,
+      city,
+    });
+  }, []);
+
+  const handleToggleModalRemoveCity = useCallback(() => {
+    setModalRemoveCity((state) => ({
+      ...state,
+      toggle: !state.toggle,
+    }));
+  }, []);
+
   return (
     <Container>
       <ContainerStructure>
@@ -59,12 +83,15 @@ const Header: React.FC<HeaderProps> = ({
         {middleContent && <ContainerMiddle>{middleContent}</ContainerMiddle>}
 
         <ContainerOptions>
-          {cityId && (
+          {city && (
             <>
               <div className="edit">
                 <FiEdit3 size={20} color="#617480" />
               </div>
-              <div className="trash">
+              <div
+                className="trash"
+                onClick={() => handleSetModalRemoveCityID(city)}
+              >
                 <FiTrash size={20} color="#617480" />
               </div>
             </>
@@ -91,6 +118,14 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </ContainerOptions>
       </ContainerStructure>
+
+      {modalRemoveCity.toggle && (
+        <ModalRemoveCity
+          city={city}
+          handleToggle={handleToggleModalRemoveCity}
+          redirect
+        />
+      )}
     </Container>
   );
 };

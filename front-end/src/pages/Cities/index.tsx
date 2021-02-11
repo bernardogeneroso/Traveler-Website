@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { CgSpinnerTwo } from "react-icons/cg";
 import { FiEdit3, FiTrash } from "react-icons/fi";
@@ -6,6 +6,9 @@ import { FiEdit3, FiTrash } from "react-icons/fi";
 import Header from "../../components/Main/Header";
 import HeaderAdmin from "../../components/Main/HeaderAdmin";
 import MenuAdmin from "../../components/Main/MenuAdmin";
+import ModalRemoveCity, {
+  ModalRemoceCityProperties,
+} from "../../components/Main/ModalRemoveCity";
 import { useCities } from "../../hooks/CitiesManager";
 import { useAuth } from "../../hooks/Auth";
 import EmojySad from "../../assets/cities/emoji_sad.png";
@@ -37,6 +40,27 @@ export interface CityProps {
 const Citites: React.FC = () => {
   const { user } = useAuth();
   const { cities, filterOption, filterOptions, loading } = useCities();
+
+  const [
+    modalRemoveCity,
+    setModalRemoveCity,
+  ] = useState<ModalRemoceCityProperties>({
+    toggle: false,
+  });
+
+  const handleSetModalRemoveCityID = useCallback((city: CityProps) => {
+    setModalRemoveCity({
+      toggle: true,
+      city,
+    });
+  }, []);
+
+  const handleToggleModalRemoveCity = useCallback(() => {
+    setModalRemoveCity((state) => ({
+      ...state,
+      toggle: !state.toggle,
+    }));
+  }, []);
 
   return (
     <>
@@ -120,7 +144,7 @@ const Citites: React.FC = () => {
                           <div>
                             <FiEdit3 size={20} color="#617480" />
                           </div>
-                          <div>
+                          <div onClick={() => handleSetModalRemoveCityID(city)}>
                             <FiTrash size={20} color="#617480" />
                           </div>
                         </ContainerOptionsCity>
@@ -138,6 +162,13 @@ const Citites: React.FC = () => {
               )}
             </ContainerCities>
           </ContainerContent>
+
+          {modalRemoveCity.toggle && (
+            <ModalRemoveCity
+              city={modalRemoveCity.city}
+              handleToggle={handleToggleModalRemoveCity}
+            />
+          )}
         </Container>
       )}
     </>
