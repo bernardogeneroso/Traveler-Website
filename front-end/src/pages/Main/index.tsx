@@ -48,11 +48,14 @@ const Main: React.FC = () => {
                 secondColumn={i === 1 ? true : false}
                 firstColumn={i !== 0 && i % 2 === 0 ? true : false}
               >
-                <img src={city.image} alt={city.name} />
+                <img
+                  src={process.env.REACT_APP_API_URL_CITIES + city.image}
+                  alt={city.name}
+                />
 
                 <div>
                   <h3>{city.name}</h3>
-                  <span>{Math.floor(Math.random() * 100)} locais</span>
+                  <span>{city.locals} locais</span>
                 </div>
               </ContentCity>
             ))}

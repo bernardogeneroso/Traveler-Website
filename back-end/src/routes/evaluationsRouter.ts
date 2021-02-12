@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import path from "path";
 import fs from "fs";
 import { promisify } from "util";
@@ -100,5 +100,10 @@ evaluationsRouter.delete("/delete/:id", async (req, resp) => {
     throw new AppError("Error on delete evaluation", 400);
   }
 });
+
+evaluationsRouter.use(
+  "/image-avatar",
+  express.static(path.resolve(uploadConfig.uploadsFolder, "evaluations"))
+);
 
 export default evaluationsRouter;

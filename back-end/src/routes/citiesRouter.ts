@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { promisify } from "util";
-import { getRepository, getConnection } from "typeorm";
+import { getRepository, getConnection, getManager } from "typeorm";
 import multer from "multer";
 
 import City from "../database/entity/City";
@@ -20,16 +20,23 @@ citiesRouter.get("/", async (req, resp) => {
   const { limit, search } = req.query;
 
   try {
-    const allCities = await citiesRepo.find({
-      cache: true,
+    const allCities = await citiesRepo
+      .createQueryBuilder("city")
       // @ts-ignore
-      take: limit ? parseInt(limit) : undefined,
-      where: search ? `name ILIKE '%${search}%'` : undefined,
-    });
+      .take(limit ? parseInt(limit) : undefined)
+      .select(
+        search
+          ? [
+              "*",
+              `CASE WHEN position('${search}' in lower(city.name)) > 0 THEN true ELSE false END  AS "opacity"`,
+            ]
+          : []
+      )
+      .getRawMany();
 
     return resp.status(200).send(allCities);
   } catch (err) {
-    throw new AppError("Error on get cities", 400);
+    throw new AppError(err, 400);
   }
 });
 

@@ -34,6 +34,9 @@ export interface CityProps {
   name: string;
   image: string;
   description: string;
+  locals: string;
+  created_at: string;
+  updated_at: string;
   opacity?: 0 | 1;
 }
 
@@ -130,12 +133,15 @@ const Citites: React.FC = () => {
                     key={city.id}
                   >
                     <ContentStructure>
-                      <img src={city.image} alt={city.name} />
+                      <img
+                        src={process.env.REACT_APP_API_URL_CITIES + city.image}
+                        alt={city.name}
+                      />
 
                       <Link to={`/city/${city.id}`}>
                         <div className="informations">
                           <h3>{city.name}</h3>
-                          <span>{Math.floor(Math.random() * 100)} locais</span>
+                          <span>{city.locals} locais</span>
                         </div>
                       </Link>
 

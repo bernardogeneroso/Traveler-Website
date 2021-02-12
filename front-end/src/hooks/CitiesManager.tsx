@@ -14,7 +14,7 @@ interface CitiesManagerData {
   searchCities: string;
   filterOption: number;
   loading: boolean;
-  addCity(city: CityProps): void;
+  addCity(city: any): void;
   editCity(): void;
   removeCity(id: number): void;
   filterOptions(option: number): void;
@@ -108,8 +108,8 @@ const CitiesProvider: React.FC = ({ children }) => {
     setCities(data);
   }, []);
 
-  const addCity = useCallback((city: CityProps) => {
-    setCities((state) => [...state, city]);
+  const addCity = useCallback((city: any) => {
+    //setCities((state) => [...state, city]);
   }, []);
 
   const editCity = useCallback(async () => {
