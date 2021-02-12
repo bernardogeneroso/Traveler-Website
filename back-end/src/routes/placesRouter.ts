@@ -1,218 +1,211 @@
 import express from "express";
-import multer from "multer";
 import path from "path";
-
 import fs from "fs";
 import { promisify } from "util";
+import { getRepository, getConnection } from "typeorm";
+import multer from "multer";
 
-const unlinkAsyncPlaceImage = promisify(fs.unlink);
-
-import conn from "../services/db";
-import StorageMulter from "../configs/mullter";
-
-interface PlaceProps {
-  id: number;
-  city_id: number;
-  name: string;
-  description: string;
-  phone_number: number | null;
-  address: string;
-  rating: number;
-  category: number;
-}
-
-const uploadImage = multer({
-  storage: StorageMulter.StoragePlacesImage,
-  limits: { fileSize: 8000000 }, // 8 MB
-  fileFilter: function (req, file, cb) {
-    const ext = file.mimetype.split("/")[1];
-    const typePermit = ["png", "jpg", "jpeg"];
-    if (!typePermit.includes(ext)) {
-      // @ts-ignore
-      cb("Type not allowed!", false);
-    }
-    cb(null, true);
-  },
-}).single("place-image");
+import AppError from "../errors/AppError";
+import uploadConfig from "../config/multer";
+import Place from "../database/entity/Place";
 
 const placesRouter = express.Router();
 
-placesRouter.get("/", (request, response) => {
-  let { id, category, limit } = request.query;
+const upload = multer(uploadConfig.multerStorageImagePlace);
+const unlinkAsyncPlaceImage = promisify(fs.unlink);
 
-  !id ? (id = "1") : (id = `city_id='${id}'`);
-  !category ? (category = "") : (category = `AND category=${category}`);
-  !limit
-    ? (limit = "")
-    : (limit = `GROUP BY rating ORDER BY rating DESC LIMIT ${limit}`);
+placesRouter.get("/", async (req, resp) => {
+  const placeRepo = getRepository(Place);
 
-  conn.query(
-    `SELECT * FROM places WHERE ${id} ${category} ${limit}`,
-    (error, result) => {
-      if (error) {
-        return response.status(400).send({
-          error,
-          error_message: "Error on get places",
-        });
-      }
+  const { limit, categorie_id, city_id } = req.query;
 
-      const handleRating = result.map((place: PlaceProps) => {
-        const rating = place.rating.toString().split(".");
-        if (rating.length === 2) {
-          return {
-            ...place,
-            rating: `${rating[0]},${rating[1]}`,
-          };
-        }
-
-        return {
-          ...place,
-          rating: `${rating[0]},0`,
-        };
+  try {
+    if (categorie_id) {
+      const allPlaces = await placeRepo.find({
+        cache: true,
+        // @ts-ignore
+        take: limit ? parseInt(limit) : undefined,
+        where: { categorie_id },
       });
 
-      return response.status(200).send(handleRating);
+      return resp.status(200).send(allPlaces);
+    } else if (city_id) {
+      const allPlaces = await placeRepo.find({
+        cache: true,
+        // @ts-ignore
+        take: limit ? parseInt(limit) : undefined,
+        where: { city_id },
+      });
+
+      return resp.status(200).send(allPlaces);
+    } else {
+      const allPlaces = await placeRepo.find({
+        cache: true,
+        // @ts-ignore
+        take: limit ? parseInt(limit) : undefined,
+      });
+
+      return resp.status(200).send(allPlaces);
     }
-  );
+  } catch (err) {
+    throw new AppError(err, 400);
+  }
 });
 
-placesRouter.get("/:id", (request, response) => {
-  const { id } = request.params;
+placesRouter.get("/:id", async (req, resp) => {
+  const placeRepo = getRepository(Place);
 
-  conn.query(`SELECT * FROM places WHERE id=?`, [id], (error, result) => {
-    if (error) {
-      return response.status(400).send({
-        error,
-        error_message: "Error on get place",
-      });
-    }
+  const { id } = req.params;
 
-    if (!result[0]) response.status(404).send();
+  try {
+    const place = await placeRepo.findOne({ id });
 
-    return response.status(200).send(result[0]);
+    if (!place) throw new AppError("Error on get place", 400);
+
+    return resp.status(200).send(place);
+  } catch (err) {
+    throw new AppError("Error on get place", 400);
+  }
+});
+
+placesRouter.post("/create", upload.single("image"), async (req, resp) => {
+  const placeRepo = getRepository(Place);
+
+  const {
+    name,
+    description,
+    phone_number,
+    address,
+    rating,
+    city_id,
+    categorie_id,
+  } = req.body;
+
+  const place = placeRepo.create({
+    name,
+    image: req.file.filename,
+    address,
+    rating,
+    description,
+    phone_number,
+    categorie_id,
+    city_id,
   });
+
+  try {
+    await placeRepo.save(place);
+
+    return resp.status(200).send();
+  } catch (err) {
+    throw new AppError(err, 400);
+  }
 });
 
-placesRouter.post("/update/:id", (request, response) => {
-  uploadImage(request, response, (err: String) => {
-    if (err instanceof multer.MulterError) {
-      return response.status(406).json(err);
-    } else if (err) {
-      return response.status(406).json(err);
-    }
-
-    const { id } = request.params;
+placesRouter.post(
+  "/update/:id",
+  upload.single("update-image"),
+  async (req, resp) => {
+    const { id } = req.params;
     const {
       name,
       description,
-      phone_number,
+      image,
       address,
-      category,
       rating,
-    } = request.body;
+      phone_number,
+    } = req.body;
 
-    if (
-      !name ||
-      !description ||
-      !phone_number ||
-      !address ||
-      !category ||
-      !rating
-    )
-      return response.status(400).send({
-        error: "Error, missing fields",
-      });
+    try {
+      if (req.file) {
+        const fileName = req.file.filename;
 
-    conn.query(
-      `SELECT image FROM places WHERE id=?`,
-      [id],
-      async (error, result) => {
-        if (error) {
-          return response.status(400).send({
-            error,
-            error_message: "Error on update place",
-          });
-        }
+        const placesRepo = getRepository(Place);
+        const place = await placesRepo.findOne({ id });
 
-        const pathFolderPlacesImage = path.resolve(
-          __dirname,
-          "..",
-          "uploads",
+        if (!place) throw new AppError("Error on update place", 400);
+
+        const filePath = path.resolve(
+          uploadConfig.uploadsFolder,
           "places",
-          result[0].image.split("images/")[1]
+          place.image
         );
 
-        try {
-          await unlinkAsyncPlaceImage(pathFolderPlacesImage);
-        } catch {
-          return response.status(400).send({
-            error: "Error on delete image",
-          });
-        }
+        const updatePlace = {
+          name,
+          description,
+          image: fileName,
+          address,
+          rating,
+          phone_number,
+        };
 
-        const imageName = request.file.filename;
-        const pathFile = `${process.env.HOST}places/images/${imageName}`;
+        await getConnection()
+          .createQueryBuilder()
+          .update(Place)
+          // @ts-ignore
+          .set(updatePlace)
+          .where("id = :id", { id })
+          .execute();
 
-        conn.query(
-          `UPDATE places SET name='${name}', image='${pathFile}', description='${description}', phone_number='${phone_number}', address='${address}', category='${category}', rating='${rating}' WHERE id=${id}`,
-          (error, result) => {
-            if (error) {
-              return response.status(400).send({
-                error,
-                error_message: "Error on update place",
-              });
-            }
+        await unlinkAsyncPlaceImage(filePath);
 
-            return response.status(200).send();
-          }
-        );
+        return resp.status(200).send();
       }
-    );
-  });
-});
 
-placesRouter.post("/create/:id", (request, response) => {
-  uploadImage(request, response, (err: String) => {
-    if (err instanceof multer.MulterError) {
-      return response.status(406).json(err);
-    } else if (err) {
-      return response.status(406).json(err);
+      const updatePlace = {
+        name,
+        description,
+        image,
+        address,
+        rating,
+        phone_number,
+      };
+
+      await getConnection()
+        .createQueryBuilder()
+        .update(Place)
+        // @ts-ignore
+        .set(updatePlace)
+        .where("id = :id", { id })
+        .execute();
+
+      return resp.status(200).send();
+    } catch (err) {
+      throw new AppError(err, 400);
     }
+  }
+);
 
-    const { id: city_id } = request.params;
-    let {
-      name,
-      description,
-      phone_number,
-      address,
-      rating,
-      category,
-    } = request.body;
+placesRouter.delete("/delete/:id", async (req, resp) => {
+  const { id } = req.params;
 
-    const imagePath = request.file.filename;
-    const pathFile = `${process.env.HOST}places/images/${imagePath}`;
+  const placesRepo = getRepository(Place);
 
-    conn.query(
-      `INSERT INTO places (city_id, name, image, description, phone_number, address, rating, category) 
-    VALUES ('${city_id}', '${name}', '${pathFile}', '${description}', ?, '${address}', '${rating}', '${category}')`,
-      [phone_number],
-      (error, result) => {
-        if (error) {
-          return response.status(400).send({
-            error,
-            error_message: "Error on insert places",
-          });
-        }
+  try {
+    const place = await placesRepo.findOne({ id });
+    if (place) {
+      const filePath = path.resolve(
+        uploadConfig.uploadsFolder,
+        "places",
+        place.image
+      );
 
-        return response.status(200).send();
-      }
-    );
-  });
+      await unlinkAsyncPlaceImage(filePath);
+
+      await placesRepo.delete({ id });
+
+      return resp.status(200).send();
+    } else {
+      throw new AppError("Error on delete place", 400);
+    }
+  } catch {
+    throw new AppError("Error on delete place", 400);
+  }
 });
 
 placesRouter.use(
-  "/images",
-  express.static(path.resolve(__dirname, "..", "uploads", "places"))
+  "/image",
+  express.static(path.resolve(uploadConfig.uploadsFolder, "places"))
 );
 
 export default placesRouter;

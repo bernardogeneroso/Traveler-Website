@@ -1,81 +1,104 @@
-import express from "express";
-import multer from "multer";
+import { Router } from "express";
 import path from "path";
+import fs from "fs";
+import { promisify } from "util";
+import { getRepository, getConnection } from "typeorm";
+import multer from "multer";
 
-import conn from "../services/db";
-import StorageMulter from "../configs/mullter";
+import Evaluation from "../database/entity/Evaluation";
+import uploadConfig from "../config/multer";
+import AppError from "../errors/AppError";
 
-const evaluationsRouter = express.Router();
+const evaluationsRouter = Router();
 
-const uploadAvatar = multer({
-  storage: StorageMulter.StorageEvaluationsAvatars,
-  limits: { fileSize: 4000000 }, // 4 MB
-  fileFilter: function (req, file, cb) {
-    const ext = file.mimetype.split("/")[1];
-    const typePermit = ["png", "jpg", "jpeg"];
-    if (!typePermit.includes(ext)) {
+const upload = multer(uploadConfig.multerStorageAvatarEvaluation);
+const unlinkAsyncPlaceImage = promisify(fs.unlink);
+
+evaluationsRouter.get("/", async (req, resp) => {
+  const evaluationsRepo = getRepository(Evaluation);
+
+  try {
+    const allEvaluations = await evaluationsRepo.find();
+
+    resp.status(200).send(allEvaluations);
+  } catch {
+    throw new AppError("Error on get evaluations");
+  }
+});
+
+evaluationsRouter.post("/approved/:status/:id", async (req, resp) => {
+  const { id, status } = req.params;
+
+  try {
+    if (!status) throw new AppError("Error on change approved");
+
+    await getConnection()
+      .createQueryBuilder()
+      .update(Evaluation)
       // @ts-ignore
-      cb("Type not allowed!", false);
-    }
-    cb(null, true);
-  },
-}).single("avatar");
+      .set({
+        approved: parseInt(status),
+      })
+      .where("id = :id", { id })
+      .execute();
+  } catch {
+    throw new AppError("Error on change approved");
+  }
 
-evaluationsRouter.get("/:id", (request, response) => {
-  const { id } = request.params;
-
-  conn.query(
-    `SELECT * FROM evaluations WHERE place_id='${id}'`,
-    (error, result) => {
-      if (error) {
-        return response.status(400).send({
-          error,
-          error_message: "Error on get evaluations",
-        });
-      } else if (Object.keys(result).length === 0) {
-        return response.status(404).send(result);
-      }
-
-      return response.status(200).send(result);
-    }
-  );
+  resp.status(200).send();
 });
 
-evaluationsRouter.post("/create", (request, response) => {
-  uploadAvatar(request, response, (err: String) => {
-    if (err instanceof multer.MulterError) {
-      return response.status(406).json(err);
-    } else if (err) {
-      return response.status(406).json(err);
+evaluationsRouter.post(
+  "/create",
+  upload.single("image-avatar"),
+  async (req, resp) => {
+    const evaluationsRepo = getRepository(Evaluation);
+
+    const { name, description, rating, place_id } = req.body;
+
+    try {
+      const evaluation = evaluationsRepo.create({
+        name,
+        description,
+        rating: parseInt(rating),
+        avatar: req.file.filename,
+        place_id,
+      });
+
+      await evaluationsRepo.save(evaluation);
+
+      resp.status(200).send(evaluation);
+    } catch {
+      throw new AppError("Error on create evaluation");
     }
-
-    const { place_id, name, description, rating } = request.body;
-
-    const avatarPath = request.file.filename;
-    const pathFile = `${process.env.HOST}evaluations/avatar/${avatarPath}`;
-
-    conn.query(
-      `INSERT INTO evaluations (place_id, name, avatar, description, rating) 
-    VALUES ('${place_id}', '${name}', '${pathFile}', '${description}', '${rating}')`,
-      (error, result) => {
-        if (error) {
-          return response.status(400).send({
-            error,
-            error_message: "Error on create the evaluations",
-          });
-        }
-
-        return response.status(200).send();
-      }
-    );
-  });
-});
-
-evaluationsRouter.use(
-  "/avatar",
-  express.static(
-    path.resolve(__dirname, "..", "uploads", "evaluations", "avatars")
-  )
+  }
 );
+
+evaluationsRouter.delete("/delete/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const evaluationsRepo = getRepository(Evaluation);
+
+  try {
+    const evaluation = await evaluationsRepo.findOne({ id });
+    if (evaluation) {
+      const filePath = path.resolve(
+        uploadConfig.uploadsFolder,
+        "evaluations",
+        evaluation.avatar
+      );
+
+      await unlinkAsyncPlaceImage(filePath);
+
+      await evaluationsRepo.delete({ id });
+
+      resp.status(200).send();
+    } else {
+      throw new AppError("Error on delete evaluation", 400);
+    }
+  } catch {
+    throw new AppError("Error on delete evaluation", 400);
+  }
+});
 
 export default evaluationsRouter;

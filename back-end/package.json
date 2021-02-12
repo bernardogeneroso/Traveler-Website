@@ -1,32 +1,37 @@
 {
-  "name": "traveler-back-end",
+  "name": "back-end-traveler",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
+    "typeorm": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "dev:server": "ts-node-dev --transpile-only --ignore-watch node_modules src/server.ts",
     "start": "node dist/server.js"
   },
-  "dependencies": {
-    "@types/bcryptjs": "^2.4.2",
-    "@types/jsonwebtoken": "^8.5.0",
-    "bcryptjs": "^2.4.3",
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
-    "crypto": "^1.0.1",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
-    "multer": "^1.4.2",
-    "mysql": "^2.18.1"
-  },
   "devDependencies": {
+    "@types/bcrypt": "^3.0.0",
     "@types/cors": "^2.8.9",
     "@types/express": "^4.17.11",
     "@types/multer": "^1.4.5",
-    "@types/mysql": "^2.15.17",
+    "@types/node": "^14.14.26",
     "ts-node-dev": "^1.1.1",
-    "typescript": "^4.1.3"
+    "typescript": "^4.1.5"
+  },
+  "dependencies": {
+    "@types/jsonwebtoken": "^8.5.0",
+    "bcrypt": "^5.0.0",
+    "celebrate": "^13.0.4",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^8.5.1",
+    "multer": "^1.4.2",
+    "mysql": "^2.18.1",
+    "pg": "^8.5.1",
+    "reflect-metadata": "^0.1.13",
+    "tsconfig-paths": "^3.9.0",
+    "typeorm": "^0.2.31"
   }
 }

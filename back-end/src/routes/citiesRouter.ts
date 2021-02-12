@@ -1,202 +1,165 @@
 import express from "express";
-import multer from "multer";
 import path from "path";
-
-import conn from "../services/db";
-import StorageMulter from "../configs/mullter";
-
 import fs from "fs";
 import { promisify } from "util";
+import { getRepository, getConnection } from "typeorm";
+import multer from "multer";
 
-const unlinkAsyncCityImage = promisify(fs.unlink);
+import City from "../database/entity/City";
+import uploadConfig from "../config/multer";
+import AppError from "../errors/AppError";
 
 const citiesRouter = express.Router();
 
-const uploadCityImage = multer({
-  storage: StorageMulter.StorageCitiesImage,
-  limits: { fileSize: 4000000 }, // 4 MB
-  fileFilter: function (req, file, cb) {
-    const ext = file.mimetype.split("/")[1];
-    const typePermit = ["png", "jpg", "jpeg"];
-    if (!typePermit.includes(ext)) {
+const upload = multer(uploadConfig.multerStorageImageCity);
+const unlinkAsyncPlaceImage = promisify(fs.unlink);
+
+citiesRouter.get("/", async (req, resp) => {
+  const citiesRepo = getRepository(City);
+
+  const { limit, search } = req.query;
+
+  try {
+    const allCities = await citiesRepo.find({
+      cache: true,
       // @ts-ignore
-      cb("Type not allowed!", false);
-    }
-    cb(null, true);
-  },
-}).single("city-image");
+      take: limit ? parseInt(limit) : undefined,
+      where: search ? `name ILIKE '%${search}%'` : undefined,
+    });
 
-citiesRouter.get("/", (request, response) => {
-  let { limit, search } = request.query;
-
-  !limit ? (limit = "") : (limit = `LIMIT ${limit}`);
-  !search
-    ? (search = "")
-    : (search = `, IF(locate('${search}',name)>0, TRUE, FALSE) AS "opacity"`);
-
-  conn.query(`SELECT *${search} FROM cities ${limit}`, (error, result) => {
-    if (error) {
-      return response.status(400).send({
-        error,
-        error_message: "Error on get cities",
-      });
-    }
-
-    response.status(200).send(result);
-  });
+    return resp.status(200).send(allCities);
+  } catch (err) {
+    throw new AppError("Error on get cities", 400);
+  }
 });
 
-citiesRouter.get("/:id", (request, response) => {
-  const { id } = request.params;
+citiesRouter.get("/:id", async (req, resp) => {
+  const { id } = req.params;
 
-  conn.query(`SELECT * FROM cities WHERE id='${id}'`, (error, result) => {
-    if (error) {
-      return response.status(400).send({
-        error,
-        error_message: "Error on get city",
-      });
-    }
+  const citiesRepo = getRepository(City);
 
-    if (!result[0]) response.status(404).send();
+  try {
+    const city = await citiesRepo.findOne({ id });
 
-    response.status(200).send(result[0]);
-  });
+    return resp.status(200).send(city);
+  } catch {
+    throw new AppError("Error on get city", 400);
+  }
 });
 
-citiesRouter.post("/update/:id", (request, response) => {
-  uploadCityImage(request, response, (err: String) => {
-    if (err instanceof multer.MulterError) {
-      return response.status(406).json(err);
-    } else if (err) {
-      return response.status(406).json(err);
-    }
+citiesRouter.post("/create", upload.single("image"), async (req, resp) => {
+  const citiesRepo = getRepository(City);
 
-    const { id } = request.params;
-    const { name, description } = request.body;
+  const { name, description, locals } = req.body;
 
-    if (!name || !description)
-      return response.status(400).send({
-        error: "Error, missing fields",
-      });
+  const city = citiesRepo.create({
+    name,
+    image: req.file.filename,
+    locals,
+    description,
+  });
+
+  try {
+    await citiesRepo.save(city);
+
+    return resp.status(200).send(city);
+  } catch {
+    throw new AppError("Error on create city", 400);
+  }
+});
+
+citiesRouter.post(
+  "/update/:id",
+  upload.single("update-image"),
+  async (req, resp) => {
+    const { id } = req.params;
+    const { name, description, image } = req.body;
 
     try {
-      const imageName = request.file.filename;
+      if (req.file) {
+        const fileName = req.file.filename;
 
-      conn.query(
-        `SELECT image FROM cities WHERE id=?`,
-        [id],
-        async (error, result) => {
-          if (error) {
-            return response.status(400).send({
-              error,
-              error_message: "Error on update city",
-            });
-          }
+        const citiesRepo = getRepository(City);
+        const user = await citiesRepo.findOne({ id });
 
-          const pathFolderCitiesImage = path.resolve(
-            __dirname,
-            "..",
-            "uploads",
-            "cities",
-            result[0].image.split("image/")[1]
-          );
+        if (!user) throw new AppError("Error on update city", 400);
 
-          try {
-            await unlinkAsyncCityImage(pathFolderCitiesImage);
-          } catch {
-            return response.status(400).send({
-              error: "Error on delete image",
-            });
-          }
+        const filePath = path.resolve(
+          uploadConfig.uploadsFolder,
+          "cities",
+          user.image
+        );
 
-          const pathFile = `${process.env.HOST}cities/image/${imageName}`;
+        const city = {
+          name,
+          description,
+          image: fileName,
+        };
 
-          conn.query(
-            `UPDATE cities SET name=?, image=?, description=? WHERE id=?`,
-            [name, pathFile, description, id],
-            (error, result) => {
-              if (error) {
-                return response.status(400).send({
-                  error,
-                  error_message: "Error on update city",
-                });
-              }
+        await getConnection()
+          .createQueryBuilder()
+          .update(City)
+          // @ts-ignore
+          .set(city)
+          .where("id = :id", { id })
+          .execute();
 
-              return response.status(200).send();
-            }
-          );
-        }
-      );
-    } catch (err) {
-      conn.query(
-        `UPDATE cities SET name=?, description=? WHERE id=?`,
-        [name, description, id],
-        (error, result) => {
-          if (error) {
-            return response.status(400).send({
-              error,
-              error_message: "Error on update city",
-            });
-          }
+        await unlinkAsyncPlaceImage(filePath);
 
-          return response.status(200).send();
-        }
-      );
-    }
-  });
-});
-
-citiesRouter.post("/create", (request, response) => {
-  uploadCityImage(request, response, (err: String) => {
-    if (err instanceof multer.MulterError) {
-      return response.status(406).json(err);
-    } else if (err) {
-      return response.status(406).json(err);
-    }
-
-    const { name, description } = request.body;
-
-    const imageCityPath = request.file.filename;
-    const pathFile = `${process.env.HOST}cities/image/${imageCityPath}`;
-
-    conn.query(
-      `INSERT INTO cities (name, image, description) 
-    VALUES ('${name}', '${pathFile}', '${description}')`,
-      (error, result) => {
-        if (error) {
-          return response.status(400).send({
-            error,
-            error_message: "Error on create a city",
-          });
-        }
-
-        return response.status(200).send({
-          id: result.insertId,
-          image: pathFile,
-        });
+        return resp.status(200).send();
       }
-    );
-  });
-});
 
-citiesRouter.delete("/remove/:id", (request, response) => {
-  const { id } = request.params;
+      const city = {
+        name,
+        description,
+        image,
+      };
 
-  conn.query(`DELETE FROM cities WHERE id=?`, [id], (error, result) => {
-    if (error) {
-      return response.status(400).send({
-        error,
-        error_message: "Error on delete a city",
-      });
+      await getConnection()
+        .createQueryBuilder()
+        .update(City)
+        // @ts-ignore
+        .set(city)
+        .where("id = :id", { id })
+        .execute();
+
+      return resp.status(200).send();
+    } catch {
+      throw new AppError("Error on update city", 400);
     }
+  }
+);
 
-    return response.status(200).send();
-  });
+citiesRouter.delete("/delete/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const citiesRepo = getRepository(City);
+
+  try {
+    const user = await citiesRepo.findOne({ id });
+    if (user) {
+      const filePath = path.resolve(
+        uploadConfig.uploadsFolder,
+        "cities",
+        user.image
+      );
+
+      await unlinkAsyncPlaceImage(filePath);
+
+      await citiesRepo.delete({ id });
+
+      return resp.status(200).send();
+    } else {
+      throw new AppError("Error on delete city", 400);
+    }
+  } catch {
+    throw new AppError("Error on delete city", 400);
+  }
 });
 
 citiesRouter.use(
   "/image",
-  express.static(path.resolve(__dirname, "..", "uploads", "cities"))
+  express.static(path.resolve(uploadConfig.uploadsFolder, "cities"))
 );
 
 export default citiesRouter;
