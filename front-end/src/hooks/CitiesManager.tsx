@@ -14,8 +14,8 @@ interface CitiesManagerData {
   searchCities: string;
   filterOption: number;
   loading: boolean;
-  addCity(city: any): void;
-  editCity(): void;
+  addCity(city: CityProps): void;
+  editCity(city: CityProps): void;
   removeCity(id: number): void;
   filterOptions(option: number): void;
   searchFilter(event: React.FormEvent<HTMLInputElement>): void;
@@ -76,10 +76,10 @@ const CitiesProvider: React.FC = ({ children }) => {
         const { data } = await api.get(`/cities/?search=${search}`);
 
         const filterCitiesExist = data.filter(
-          (city: CityProps) => city.opacity === 1
+          (city: CityProps) => city.opacity
         );
         const filterCitiesNotExist = data.filter(
-          (city: CityProps) => city.opacity === 0
+          (city: CityProps) => !city.opacity
         );
 
         let citiesResponse = filterCitiesExist.concat(filterCitiesNotExist);
@@ -108,13 +108,20 @@ const CitiesProvider: React.FC = ({ children }) => {
     setCities(data);
   }, []);
 
-  const addCity = useCallback((city: any) => {
-    //setCities((state) => [...state, city]);
+  const addCity = useCallback((city: CityProps) => {
+    setCities((state) => [...state, city]);
   }, []);
 
-  const editCity = useCallback(async () => {
-    const { data } = await api.get(`/cities`);
-    setCities(data);
+  const editCity = useCallback((city: CityProps) => {
+    setCities((state) => {
+      const filter = state.map((cityData: CityProps) => {
+        if (city.id === cityData.id) return city;
+
+        return cityData;
+      });
+
+      return filter;
+    });
   }, []);
 
   const removeCity = useCallback(async (id: number) => {

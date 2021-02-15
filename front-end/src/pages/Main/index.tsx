@@ -49,7 +49,7 @@ const Main: React.FC = () => {
                 firstColumn={i !== 0 && i % 2 === 0 ? true : false}
               >
                 <img
-                  src={process.env.REACT_APP_API_URL_CITIES + city.image}
+                  src={`${process.env.REACT_APP_API_URL}/cities/image/${city.image}`}
                   alt={city.name}
                 />
 

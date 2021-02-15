@@ -863,6 +863,11 @@ ignore-walk@^3.0.1:
   dependencies:
     minimatch "^3.0.4"
 
+image-resize-compress@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/image-resize-compress/-/image-resize-compress-1.0.8.tgz#194c15eb93b0afb5b29654a7239f4b3cd44ec380"
+  integrity sha512-4RZZnk+qv1LZlxiDe3MxBRUAoc2xicS3Xny0e7AtzRz9k8D9P/72vKxxenCKFzM8TjreHYoE+rqQS4u+DobhNQ==
+
 indent-string@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-2.1.0.tgz#8e2d48348742121b4a8218b7a137e9a52049dc80"

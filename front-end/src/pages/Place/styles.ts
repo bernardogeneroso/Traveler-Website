@@ -75,10 +75,11 @@ export const Spinner = styled.div`
 export const Container = styled.div<ContainerProps>`
   background: #f5f8fa;
   position: fixed;
-  top: 0;
   left: 0;
-  bottom: 0;
+  top: 0;
   right: 0;
+  bottom: 0;
+  overflow: overlay;
 `;
 
 export const ContainerPlaceInformation = styled.div<ContainerPlaceInformationProps>`

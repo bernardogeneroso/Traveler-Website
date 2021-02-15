@@ -32,7 +32,7 @@ usersRouter.post("/create", async (req, resp) => {
   }
 });
 
-usersRouter.get("/session", async (req, resp) => {
+usersRouter.post("/session", async (req, resp) => {
   const { email, password } = req.body;
 
   const userRepo = getRepository(User);

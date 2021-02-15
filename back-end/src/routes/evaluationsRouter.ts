@@ -14,11 +14,15 @@ const evaluationsRouter = Router();
 const upload = multer(uploadConfig.multerStorageAvatarEvaluation);
 const unlinkAsyncPlaceImage = promisify(fs.unlink);
 
-evaluationsRouter.get("/", async (req, resp) => {
+evaluationsRouter.get("/:id", async (req, resp) => {
+  const { id } = req.params;
+
   const evaluationsRepo = getRepository(Evaluation);
 
   try {
-    const allEvaluations = await evaluationsRepo.find();
+    const allEvaluations = await evaluationsRepo.find({
+      place_id: id,
+    });
 
     resp.status(200).send(allEvaluations);
   } catch {

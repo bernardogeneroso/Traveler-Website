@@ -5,11 +5,11 @@ import {
   TableForeignKey,
 } from "typeorm";
 
-export class createEvaluations1613142263393 implements MigrationInterface {
+export class createPlacesServices1613394688542 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: "evaluations",
+        name: "placeservices",
         columns: [
           {
             name: "id",
@@ -20,30 +20,17 @@ export class createEvaluations1613142263393 implements MigrationInterface {
             default: "uuid_generate_v4()",
           },
           {
-            name: "name",
+            name: "timeOpen",
             type: "varchar",
           },
           {
-            name: "avatar",
-            type: "varchar",
-          },
-          {
-            name: "description",
-            type: "text",
-          },
-          {
-            name: "rating",
-            type: "int",
-          },
-          {
-            name: "approved",
+            name: "order",
             type: "int",
           },
           {
             name: "place_id",
             type: "uuid",
           },
-
           {
             name: "created_at",
             type: "timestamp",
@@ -59,9 +46,9 @@ export class createEvaluations1613142263393 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey(
-      "evaluations",
+      "placeservices",
       new TableForeignKey({
-        name: "EvaluationsPlace",
+        name: "PlaceServicePlace",
         columnNames: ["place_id"],
         referencedColumnNames: ["id"],
         referencedTableName: "places",
@@ -72,6 +59,6 @@ export class createEvaluations1613142263393 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable("evaluations");
+    await queryRunner.dropTable("placeservices");
   }
 }

@@ -134,7 +134,7 @@ const Citites: React.FC = () => {
                   >
                     <ContentStructure>
                       <img
-                        src={process.env.REACT_APP_API_URL_CITIES + city.image}
+                        src={`${process.env.REACT_APP_API_URL}/cities/image/${city.image}`}
                         alt={city.name}
                       />
 

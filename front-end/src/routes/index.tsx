@@ -11,6 +11,7 @@ import CreateCityStage01 from "../pages/Cities/Create/Stage01";
 import CreateCityStage02 from "../pages/Cities/Create/Stage02";
 
 import Place from "../pages/Place";
+import PlaceEdit from "../pages/Place/Edit";
 
 import SignIn from "../pages/SignIn";
 
@@ -26,7 +27,8 @@ const Routes: React.FC = () => {
       <Route path="/city/:id" component={City} exact />
       <Route path="/city/edit/:id" component={CityEdit} />
 
-      <Route path="/place/:id" component={Place} />
+      <Route path="/place/:id" component={Place} exact />
+      <Route path="/place/edit/:id" component={PlaceEdit} />
 
       <Route path="/signin" component={SignIn} />
 

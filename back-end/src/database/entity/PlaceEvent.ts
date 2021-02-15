@@ -7,29 +7,27 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
+
 import Place from "./Place";
 
-@Entity("evaluations")
-export default class Evaluation {
+@Entity("placesevents")
+export default class PlaceEvent {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column()
-  name!: string;
+  @Column("timestamp with time zone")
+  startDay!: Date;
+
+  @Column("timestamp with time zone")
+  endDay!: Date;
 
   @Column()
-  avatar!: string;
+  year!: string;
 
-  @Column("text")
-  description!: string;
-
-  @Column()
-  rating!: number;
-
-  @Column("boolean", { default: 0 })
-  approved: number = 0;
-
-  @Column() place_id!: string;
+  @Column({
+    unique: true,
+  })
+  place_id!: string;
 
   @ManyToOne(() => Place)
   @JoinColumn({ name: "place_id" })

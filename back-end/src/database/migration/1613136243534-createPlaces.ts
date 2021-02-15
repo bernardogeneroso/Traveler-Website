@@ -54,7 +54,6 @@ export class createPlaces1613136243534 implements MigrationInterface {
             name: "categorie_id",
             type: "uuid",
           },
-
           {
             name: "created_at",
             type: "timestamp",
@@ -76,7 +75,7 @@ export class createPlaces1613136243534 implements MigrationInterface {
         columnNames: ["categorie_id"],
         referencedColumnNames: ["id"],
         referencedTableName: "categories",
-        onDelete: "SET NULL",
+        onDelete: "CASCADE",
         onUpdate: "CASCADE",
       })
     );
@@ -88,7 +87,7 @@ export class createPlaces1613136243534 implements MigrationInterface {
         columnNames: ["city_id"],
         referencedColumnNames: ["id"],
         referencedTableName: "cities",
-        onDelete: "SET NULL",
+        onDelete: "CASCADE",
         onUpdate: "CASCADE",
       })
     );

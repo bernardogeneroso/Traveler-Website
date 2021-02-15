@@ -5,11 +5,11 @@ import {
   TableForeignKey,
 } from "typeorm";
 
-export class createEvaluations1613142263393 implements MigrationInterface {
+export class createPlacesEvents1613395165105 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: "evaluations",
+        name: "placesevents",
         columns: [
           {
             name: "id",
@@ -20,30 +20,22 @@ export class createEvaluations1613142263393 implements MigrationInterface {
             default: "uuid_generate_v4()",
           },
           {
-            name: "name",
+            name: "startDay",
+            type: "timestamp with time zone",
+          },
+          {
+            name: "endDay",
+            type: "timestamp with time zone",
+          },
+          {
+            name: "year",
             type: "varchar",
-          },
-          {
-            name: "avatar",
-            type: "varchar",
-          },
-          {
-            name: "description",
-            type: "text",
-          },
-          {
-            name: "rating",
-            type: "int",
-          },
-          {
-            name: "approved",
-            type: "int",
           },
           {
             name: "place_id",
             type: "uuid",
+            isUnique: true,
           },
-
           {
             name: "created_at",
             type: "timestamp",
@@ -59,9 +51,9 @@ export class createEvaluations1613142263393 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey(
-      "evaluations",
+      "placesevents",
       new TableForeignKey({
-        name: "EvaluationsPlace",
+        name: "PlaceEventsPlace",
         columnNames: ["place_id"],
         referencedColumnNames: ["id"],
         referencedTableName: "places",
@@ -72,6 +64,6 @@ export class createEvaluations1613142263393 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable("evaluations");
+    await queryRunner.dropTable("placesevents");
   }
 }

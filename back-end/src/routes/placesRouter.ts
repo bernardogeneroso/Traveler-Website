@@ -8,6 +8,8 @@ import multer from "multer";
 import AppError from "../errors/AppError";
 import uploadConfig from "../config/multer";
 import Place from "../database/entity/Place";
+import PlaceService from "../database/entity/PlaceService";
+import PlaceEvent from "../database/entity/PlaceEvent";
 
 const placesRouter = express.Router();
 
@@ -20,35 +22,67 @@ placesRouter.get("/", async (req, resp) => {
   const { limit, categorie_id, city_id } = req.query;
 
   try {
-    if (categorie_id) {
+    if (categorie_id && city_id) {
       const allPlaces = await placeRepo.find({
         cache: true,
         // @ts-ignore
         take: limit ? parseInt(limit) : undefined,
-        where: { categorie_id },
+        where: { categorie_id, city_id },
       });
+
+      if (!allPlaces) throw new AppError("Error on get places", 400);
+
+      return resp.status(200).send(allPlaces);
+    } else if (categorie_id) {
+      const allPlaces = await placeRepo.query(`
+        SELECT "place"."id" AS id, "place"."name" AS place_name, "place"."image", "place"."description", "place"."phone_number", "place"."address", "place"."rating", "place"."city_id", "place"."categorie_id", "place"."created_at", "place"."updated_at", "categorie"."iconName", "categorie"."name" AS categorie_name 
+        FROM "places" "place" 
+        INNER JOIN "categories" "categorie" ON "categorie"."id" = "place"."categorie_id" 
+        WHERE categorie.id = '${categorie_id}'
+        ORDER BY place.rating DESC 
+        ${
+          // @ts-ignore
+          limit ? "LIMIT " + parseInt(limit) : ""
+        }
+      `);
+
+      if (!allPlaces) throw new AppError("Error on get places", 400);
 
       return resp.status(200).send(allPlaces);
     } else if (city_id) {
-      const allPlaces = await placeRepo.find({
-        cache: true,
-        // @ts-ignore
-        take: limit ? parseInt(limit) : undefined,
-        where: { city_id },
-      });
+      const allPlaces = await placeRepo.query(`
+        SELECT "place"."id" AS id, "place"."name" AS place_name, "place"."image", "place"."description", "place"."phone_number", "place"."address", "place"."rating", "place"."city_id", "place"."categorie_id", "place"."created_at", "place"."updated_at", "categorie"."iconName", "categorie"."name" AS categorie_name 
+        FROM "places" "place" 
+        INNER JOIN "categories" "categorie" ON "categorie"."id" = "place"."categorie_id" 
+        WHERE place.city_id = '${city_id}'
+        ORDER BY place.rating DESC
+        ${
+          // @ts-ignore
+          limit ? "LIMIT " + parseInt(limit) : ""
+        }
+      `);
+
+      if (!allPlaces) throw new AppError("Error on get places", 400);
 
       return resp.status(200).send(allPlaces);
     } else {
-      const allPlaces = await placeRepo.find({
-        cache: true,
-        // @ts-ignore
-        take: limit ? parseInt(limit) : undefined,
-      });
+      const allPlaces = await placeRepo.query(`
+        SELECT "place"."id" AS id, "place"."name" AS place_name, "place"."image", "place"."description", "place"."phone_number", "place"."address", "place"."rating", "place"."city_id", "place"."categorie_id", "place"."created_at", "place"."updated_at", "categorie"."iconName", "categorie"."name" AS categorie_name 
+        FROM "places" "place" 
+        INNER JOIN "categories" "categorie" ON "categorie"."id" = "place"."categorie_id" 
+        ORDER BY place.rating DESC 
+        ${
+          // @ts-ignore
+          limit ? "LIMIT " + parseInt(limit) : ""
+        }
+      `);
+
+      if (!allPlaces) throw new AppError("Error on get places", 400);
 
       return resp.status(200).send(allPlaces);
     }
   } catch (err) {
-    throw new AppError(err, 400);
+    throw new AppError("Error on get places", 400);
   }
 });
 
@@ -58,13 +92,20 @@ placesRouter.get("/:id", async (req, resp) => {
   const { id } = req.params;
 
   try {
-    const place = await placeRepo.findOne({ id });
+    const place = await placeRepo
+      .createQueryBuilder("place")
+      .select(
+        "*, place.id AS id, place.name AS place_name, categorie.name AS categorie_name"
+      )
+      .innerJoin("categories", "categorie", "categorie.id =  place.categorie")
+      .where(`place.id='${id}'`)
+      .getRawOne();
 
     if (!place) throw new AppError("Error on get place", 400);
 
     return resp.status(200).send(place);
   } catch (err) {
-    throw new AppError("Error on get place", 400);
+    throw new AppError(err, 400);
   }
 });
 
@@ -97,7 +138,118 @@ placesRouter.post("/create", upload.single("image"), async (req, resp) => {
 
     return resp.status(200).send();
   } catch (err) {
-    throw new AppError(err, 400);
+    throw new AppError("Error on create place", 400);
+  }
+});
+
+placesRouter.post("/create/service/:id", async (req, resp) => {
+  const { id } = req.params;
+  const { service } = req.body;
+
+  const manageService = service.map((timeService: string, i: number) => {
+    return {
+      timeOpen: timeService,
+      order: i + 1,
+      place_id: id,
+    };
+  });
+
+  const placeServiceRepo = getRepository(PlaceService);
+
+  try {
+    await placeServiceRepo
+      .createQueryBuilder()
+      .insert()
+      .values(manageService)
+      .execute();
+
+    return resp.status(200).send();
+  } catch (err) {
+    throw new AppError("Error on create service of place", 400);
+  }
+});
+
+placesRouter.get("/show/service/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const placeServiceRepo = getRepository(PlaceService);
+
+  try {
+    const serviceOfPlace = await placeServiceRepo.find({
+      cache: true,
+      where: {
+        place_id: id,
+      },
+    });
+
+    if (!serviceOfPlace)
+      throw new AppError("Error on get service of place", 400);
+
+    const daysOfWeek = [
+      "Domingo",
+      "Segunda",
+      "Terça",
+      "Quarta",
+      "Quinta",
+      "Sexta",
+      "Sabádo",
+    ];
+
+    const serviceEditPlace = serviceOfPlace.map((service, i: number) => {
+      return {
+        dayOfWeek: daysOfWeek[i],
+        ...service,
+      };
+    });
+
+    return resp.status(200).send(serviceEditPlace);
+  } catch (err) {
+    throw new AppError("Error on get service of place", 400);
+  }
+});
+
+placesRouter.post("/create/event/:id", async (req, resp) => {
+  const { id } = req.params;
+  const { startDay, endDay, year } = req.body;
+
+  const placeEventRepo = getRepository(PlaceEvent);
+
+  try {
+    await placeEventRepo
+      .createQueryBuilder()
+      .insert()
+      .values({
+        startDay,
+        endDay,
+        year,
+        place_id: id,
+      })
+      .execute();
+
+    return resp.status(200).send();
+  } catch (err) {
+    throw new AppError("Error on create event of place", 400);
+  }
+});
+
+placesRouter.get("/show/event/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const placeEventRepo = getRepository(PlaceEvent);
+
+  try {
+    const serviceOfPlace = await placeEventRepo.findOne({
+      cache: true,
+      where: {
+        place_id: id,
+      },
+    });
+
+    if (!serviceOfPlace) throw new AppError("Error on get event of place", 400);
+
+    return resp.status(200).send(serviceOfPlace);
+  } catch (err) {
+    throw new AppError("Error on get event of place", 400);
   }
 });
 
@@ -171,7 +323,7 @@ placesRouter.post(
 
       return resp.status(200).send();
     } catch (err) {
-      throw new AppError(err, 400);
+      throw new AppError("Error on update place", 400);
     }
   }
 );

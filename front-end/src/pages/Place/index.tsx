@@ -1,15 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import {
-  FiCamera,
-  FiCalendar,
-  FiCoffee,
-  FiMessageSquare,
-} from "react-icons/fi";
+import { FiMessageSquare } from "react-icons/fi";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { CgSpinnerTwo } from "react-icons/cg";
 import { AiFillStar, AiOutlineStar, AiOutlineClose } from "react-icons/ai";
-import { getDay, getDate, getYear, getMonth, addWeeks } from "date-fns";
+import { getDay, getYear, getMonth, eachDayOfInterval } from "date-fns";
 import { MapContainer, TileLayer } from "react-leaflet";
 
 import Header from "../../components/Main/Header";
@@ -72,6 +67,8 @@ import {
   BodyModalSeeEvaluation,
 } from "./styles";
 import { FiInfo } from "react-icons/fi";
+import Icon from "../../components/Icon";
+import { parseISO } from "date-fns/esm/fp";
 
 interface EvaluationsProps {
   id: number;
@@ -89,6 +86,22 @@ interface FormModalAddEvaluationProps {
   evaluation: number;
 }
 
+interface ShecdulesPlaceProps {
+  id: string;
+  timeOpen: string;
+  order: number;
+  dayOfWeek: string;
+  place_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface EventPlaceProps {
+  startDay: Date;
+  endDay: Date;
+  year: string;
+}
+
 interface ParamsProps {
   id: string;
 }
@@ -101,6 +114,12 @@ const Place = () => {
   const [place, setPlace] = useState({} as PlaceProps);
   const [loading, setLoading] = useState<boolean>(true);
   const [evaluations, setEvaluations] = useState<EvaluationsProps[]>([]);
+  const [shecdulesPlace, setShecdulesPlace] = useState<
+    ShecdulesPlaceProps[] | undefined
+  >(undefined);
+  const [eventPlace, setEventPlace] = useState<EventPlaceProps | undefined>(
+    undefined
+  );
   const [modalAddEvaluation, setModalAddEvaluation] = useState<boolean>(false);
   const [modalSeeEvaluation, setModalSeeEvaluation] = useState<boolean>(false);
   const [
@@ -143,6 +162,18 @@ const Place = () => {
       });
     }
   }, [place.id]);
+
+  useEffect(() => {
+    if (place.iconName === "FiCoffee") {
+      api.get(`/places/show/service/${place.id}`).then((response) => {
+        setShecdulesPlace(response.data);
+      });
+    } else if (place.iconName === "FiCalendar") {
+      api.get(`/places/show/event/${place.id}`).then((response) => {
+        setEventPlace(response.data);
+      });
+    }
+  }, [place.iconName, place.id]);
 
   const handleToggleModalAddEvaluation = useCallback(() => {
     setModalAddEvaluation((state) => {
@@ -242,54 +273,77 @@ const Place = () => {
   );
 
   const handleEventNextEdition = useMemo(() => {
-    const dateNow = new Date();
-    const oneMoreWeek = addWeeks(dateNow, 1);
-    const day = getDate(oneMoreWeek);
-    const month = getMonth(oneMoreWeek);
-    const year = getYear(oneMoreWeek);
-    let monthName = "";
+    const firstDay = eventPlace?.startDay;
+    const secondDay = eventPlace?.endDay;
 
-    switch (month) {
-      case 0:
-        monthName = "janeiro";
-        break;
-      case 1:
-        monthName = "fevereiro";
-        break;
-      case 2:
-        monthName = "março";
-        break;
-      case 3:
-        monthName = "abril";
-        break;
-      case 4:
-        monthName = "maio";
-        break;
-      case 5:
-        monthName = "junho";
-        break;
-      case 6:
-        monthName = "julho";
-        break;
-      case 7:
-        monthName = "agosto";
-        break;
-      case 8:
-        monthName = "setembro";
-        break;
-      case 9:
-        monthName = "outubro";
-        break;
-      case 10:
-        monthName = "novembro";
-        break;
-      case 11:
-        monthName = "dezembro";
-        break;
+    if (firstDay && secondDay) {
+      let monthName = "";
+      const month = getMonth(new Date(secondDay));
+      const year = getYear(new Date(secondDay));
+
+      switch (month) {
+        case 0:
+          monthName = "janeiro";
+          break;
+        case 1:
+          monthName = "fevereiro";
+          break;
+        case 2:
+          monthName = "março";
+          break;
+        case 3:
+          monthName = "abril";
+          break;
+        case 4:
+          monthName = "maio";
+          break;
+        case 5:
+          monthName = "junho";
+          break;
+        case 6:
+          monthName = "julho";
+          break;
+        case 7:
+          monthName = "agosto";
+          break;
+        case 8:
+          monthName = "setembro";
+          break;
+        case 9:
+          monthName = "outubro";
+          break;
+        case 10:
+          monthName = "novembro";
+          break;
+        case 11:
+          monthName = "dezembro";
+          break;
+      }
+
+      const intervalDays = eachDayOfInterval({
+        start: new Date(firstDay),
+        end: new Date(secondDay),
+      });
+
+      const days = intervalDays.map((day: Date) => {
+        return day.getDate();
+      });
+
+      let strectureDays = "";
+
+      for (let i = 0; i < days.length; i++) {
+        if (i < days.length - 1) {
+          strectureDays = strectureDays + days[i] + ", ";
+        } else if (i === days.length - 1) {
+          strectureDays = strectureDays + "e " + days[i];
+        }
+      }
+
+      return `Dias ${strectureDays} de ${monthName} de ${year}`;
     }
 
-    return `Dias ${day}, ${day + 1} e ${day + 2} de ${monthName} de ${year}`;
-  }, []);
+    return;
+  }, [eventPlace]);
 
   const handleEvaluationAverage = useMemo(() => {
     if (!evaluations) return;
@@ -357,58 +411,30 @@ const Place = () => {
 
               <ContainerStructurePlaceInformation>
                 <ContentPlaceInformation>
-                  <h1>{place.name}</h1>
+                  <h1>{place.place_name}</h1>
 
                   <p>{place.description}</p>
 
-                  {place.category === 1 ? (
+                  {shecdulesPlace && (
                     <>
                       <StructureShecdulesPlace>
                         <h2>Atendimento</h2>
                         <hr />
                         <ContainerShecdulesPlace>
-                          <ContentShecdulesPlace
-                            className={scheduleChoice === 1 ? "focus" : ""}
-                          >
-                            <span>Domingo</span>
-                            <div>Fechado</div>
-                          </ContentShecdulesPlace>
-                          <ContentShecdulesPlace
-                            className={scheduleChoice === 2 ? "focus" : ""}
-                          >
-                            <span>Segunda</span>
-                            <div>8h - 19h</div>
-                          </ContentShecdulesPlace>
-                          <ContentShecdulesPlace
-                            className={scheduleChoice === 3 ? "focus" : ""}
-                          >
-                            <span>Terça</span>
-                            <div>8h - 19h</div>
-                          </ContentShecdulesPlace>
-                          <ContentShecdulesPlace
-                            className={scheduleChoice === 4 ? "focus" : ""}
-                          >
-                            <span>Quarta</span>
-                            <div>8h - 19h</div>
-                          </ContentShecdulesPlace>
-                          <ContentShecdulesPlace
-                            className={scheduleChoice === 5 ? "focus" : ""}
-                          >
-                            <span>Quinta</span>
-                            <div>8h - 19h</div>
-                          </ContentShecdulesPlace>
-                          <ContentShecdulesPlace
-                            className={scheduleChoice === 6 ? "focus" : ""}
-                          >
-                            <span>Sexta</span>
-                            <div>8h - 19h</div>
-                          </ContentShecdulesPlace>
-                          <ContentShecdulesPlace
-                            className={scheduleChoice === 7 ? "focus" : ""}
-                          >
-                            <span>Sábado</span>
-                            <div>8h - 17h</div>
-                          </ContentShecdulesPlace>
+                          {shecdulesPlace.map(
+                            (schedulePlace: ShecdulesPlaceProps) => (
+                              <ContentShecdulesPlace
+                                className={
+                                  scheduleChoice === schedulePlace.order
+                                    ? "focus"
+                                    : ""
+                                }
+                              >
+                                <span>{schedulePlace.dayOfWeek}</span>
+                                <div>{schedulePlace.timeOpen}</div>
+                              </ContentShecdulesPlace>
+                            )
+                          )}
                         </ContainerShecdulesPlace>
                       </StructureShecdulesPlace>
 
@@ -428,13 +454,13 @@ const Place = () => {
                         </div>
                       </ContainerPlaceContact>
                     </>
-                  ) : (
-                    place.category === 3 && (
-                      <ContainerNextEditionEvent>
-                        <span>Próxima edição em</span>
-                        <span>{handleEventNextEdition}</span>
-                      </ContainerNextEditionEvent>
-                    )
+                  )}
+
+                  {eventPlace && (
+                    <ContainerNextEditionEvent>
+                      <span>Próxima edição em</span>
+                      <span>{handleEventNextEdition}</span>
+                    </ContainerNextEditionEvent>
                   )}
 
                   <ContainerPlaceMaps>
@@ -499,7 +525,7 @@ const Place = () => {
                           <ContentPlaceRatingComment key={evaluation.id}>
                             <PlaceRatingCommentLeftImage>
                               <img
-                                src={evaluation.avatar}
+                                src={`${process.env.REACT_APP_API_URL}/evaluations/image-avatar/${evaluation.avatar}`}
                                 alt={evaluation.name}
                               />
                             </PlaceRatingCommentLeftImage>
@@ -537,15 +563,11 @@ const Place = () => {
               </ContainerStructurePlaceInformation>
             </StructurePlaceInformation>
 
-            <PlaceBackground image={place.image} />
+            <PlaceBackground
+              image={`${process.env.REACT_APP_API_URL}/places/image/${place.image}`}
+            />
             <PlaceIcon>
-              {place.category === 1 ? (
-                <FiCoffee size={26} color="#F25D27" />
-              ) : place.category === 2 ? (
-                <FiCamera size={26} color="#F25D27" />
-              ) : (
-                <FiCalendar size={26} color="#F25D27" />
-              )}
+              <Icon iconName={place.iconName} size={26} color="#F25D27" />
             </PlaceIcon>
           </ContainerPlaceInformation>
 
@@ -705,7 +727,7 @@ const Place = () => {
                         <ContentPlaceRatingComment key={evaluation.id}>
                           <PlaceRatingCommentLeftImage>
                             <img
-                              src={evaluation.avatar}
+                              src={`${process.env.REACT_APP_API_URL}/evaluations/image-avatar/${evaluation.avatar}`}
                               alt={evaluation.name}
                             />
                           </PlaceRatingCommentLeftImage>

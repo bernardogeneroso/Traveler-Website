@@ -73,10 +73,10 @@ const Header: React.FC<HeaderProps> = ({
 
           {placeId && (
             <ContainerOptions>
-              <div>
+              <div className="edit">
                 <FiEdit3 size={20} color="#617480" />
               </div>
-              <div>
+              <div className="trash">
                 <FiTrash size={20} color="#617480" />
               </div>
             </ContainerOptions>

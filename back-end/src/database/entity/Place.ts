@@ -12,6 +12,8 @@ import {
 import Categorie from "./Categorie";
 import City from "./City";
 import Evaluation from "./Evaluation";
+import PlaceEvent from "./PlaceEvent";
+import PlaceService from "./PlaceService";
 
 @Entity("places")
 export default class Place {
@@ -38,6 +40,12 @@ export default class Place {
 
   @OneToMany(() => Evaluation, (evaluations) => evaluations.place_id)
   evaluations!: Evaluation;
+
+  @OneToMany(() => PlaceService, (placeServices) => placeServices.place_id)
+  placeServices!: PlaceService;
+
+  @OneToMany(() => PlaceEvent, (placeEvents) => placeEvents.place_id)
+  placeEvents!: PlaceEvent;
 
   @Column() city_id!: string;
 

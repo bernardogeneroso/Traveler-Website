@@ -55,7 +55,7 @@ const Edit: React.FC = () => {
         name: data.name,
         description: data.description,
         imageSettings: {
-          image: data.image,
+          image: `${process.env.REACT_APP_API_URL}/cities/image/${data.image}`,
           change: 0,
         },
       });
@@ -99,21 +99,23 @@ const Edit: React.FC = () => {
 
       try {
         const {
-          imageSettings: { file },
+          imageSettings: { file, image },
           name,
           description,
         } = form;
 
         const formData = new FormData();
-        if (file) formData.append("city-image", file);
+        file
+          ? formData.append("update-image", file)
+          : formData.append("image", image.split("image/")[1]);
         formData.append("name", name);
         formData.append("description", description);
 
         const { id } = params;
 
-        await api.post(`/cities/update/${id}`, formData);
+        const { data } = await api.post(`/cities/update/${id}`, formData);
 
-        editCity();
+        editCity(data);
 
         addToast({
           title: "Cidade atualizada com sucesso",

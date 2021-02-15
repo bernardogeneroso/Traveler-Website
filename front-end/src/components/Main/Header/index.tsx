@@ -3,6 +3,7 @@ import { FiSearch, FiX, FiArrowLeft } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 import travelerLogo from "../../../assets/header/Logo.png";
+import { useAuth } from "../../../hooks/Auth";
 import { useCities } from "../../../hooks/CitiesManager";
 
 import {
@@ -26,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({
   lastPage,
   middleContent = "none",
 }) => {
+  const { user } = useAuth();
   const { searchCities, searchFilter, cleanSearchFilter } = useCities();
 
   return (
@@ -79,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </ContainerMiddle>
 
-        {restrict && (
+        {restrict && !user && (
           <Link to="/signin">
             <ContainerRestrictAccess>
               <button>Acesso restrito</button>

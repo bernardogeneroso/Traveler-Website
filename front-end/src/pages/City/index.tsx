@@ -15,6 +15,7 @@ import { AiFillStar } from "react-icons/ai";
 import Header from "../../components/Main/Header";
 import HeaderAdmin from "../../components/Main/HeaderAdmin";
 import MenuAdmin from "../../components/Main/MenuAdmin";
+import Icon from "../../components/Icon";
 import { CityProps } from "../Cities";
 import api from "../../services/api";
 import { useAuth } from "../../hooks/Auth";
@@ -50,14 +51,26 @@ import {
 
 export interface PlaceProps {
   id: number;
-  city_id: number;
-  name: string;
+  place_name: string;
   image: string;
   description: string;
-  phone_number: string;
+  phone_number: string | null;
   address: string;
-  category: number;
-  rating: number;
+  rating: string;
+  iconName: string;
+  categorie_name: string;
+  city_id: string;
+  categorie_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CategoriesProps {
+  id: string;
+  name: string;
+  iconName: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface ParamsProps {
@@ -71,17 +84,23 @@ const City: React.FC = () => {
 
   const [city, setCity] = useState<CityProps>({} as CityProps);
   const [loading, setLoading] = useState<boolean>(true);
-  const [filterOption, setFilterOption] = useState<number>(1);
+  const [filterOption, setFilterOption] = useState<string>("all");
   const [places, setPlaces] = useState<PlaceProps[]>([]);
   const [placesFilter, setPlacesFiler] = useState<PlaceProps[]>([]);
+  const [categories, setCategories] = useState<CategoriesProps[]>([]);
 
   useEffect(() => {
     const { id } = params;
 
     api
       .get(`/cities/${id}`)
-      .then((response) => {
-        setCity(response.data);
+      .then(({ data }) => {
+        const city = {
+          ...data,
+          image: `${process.env.REACT_APP_API_URL}/cities/image/${data.image}`,
+        };
+
+        setCity(city);
         setLoading(false);
       })
       .catch(() => {
@@ -90,17 +109,18 @@ const City: React.FC = () => {
   }, [history, params]);
 
   useEffect(() => {
-    api
-      .get(`/places`, {
-        params: {
-          id: city.id,
-          limit: 4,
-        },
-      })
-      .then((response) => {
+    if (city.id) {
+      api.get(`/places/?limit=4&city_id=${city.id}`).then((response) => {
         setPlaces(response.data);
       });
+    }
   }, [city]);
+
+  useEffect(() => {
+    api.get("/categories").then((response) => {
+      setCategories(response.data);
+    });
+  }, []);
 
   useEffect(() => {
     api.get(`/places`).then((response) => {
@@ -109,11 +129,11 @@ const City: React.FC = () => {
   }, []);
 
   const handleFilterOptions = useCallback(
-    async (option: number) => {
+    async (option: string) => {
       if (option === filterOption) return;
       setFilterOption(option);
 
-      if (option === 1) {
+      if (option === "all") {
         const { data } = await api.get(`/places`);
         setPlacesFiler(data);
         return;
@@ -121,9 +141,10 @@ const City: React.FC = () => {
 
       const { data } = await api.get(`/places`, {
         params: {
-          category: option - 1,
+          categorie_id: option,
         },
       });
+
       setPlacesFiler(data);
     },
     [filterOption]
@@ -216,7 +237,10 @@ const City: React.FC = () => {
                 <ContainerTops>
                   {places.map((place: PlaceProps) => (
                     <ContentTopRating key={place.id}>
-                      <img src={place.image} alt={place.name} />
+                      <img
+                        src={`${process.env.REACT_APP_API_URL}/places/image/${place.image}`}
+                        alt={place.place_name}
+                      />
 
                       <Link
                         to={`/place/${place.id}`}
@@ -225,24 +249,17 @@ const City: React.FC = () => {
                         }}
                         className="informations"
                       >
-                        <h3>{place.name}</h3>
+                        <h3>{place.place_name}</h3>
 
-                        {place.category === 1 ? (
-                          <div className="category">
-                            Comida e Bebida
-                            <FiCoffee size={20} color="#F25D27" />
-                          </div>
-                        ) : place.category === 2 ? (
-                          <div className="category">
-                            Pontos Turísticos
-                            <FiCamera size={20} color="#F25D27" />
-                          </div>
-                        ) : (
-                          <div className="category">
-                            Eventos Organizados
-                            <FiCalendar size={20} color="#F25D27" />
-                          </div>
-                        )}
+                        <div className="category">
+                          {place.categorie_name}
+                          <Icon
+                            iconName={place.iconName}
+                            size={20}
+                            color="#F25D27"
+                          />
+                        </div>
+
                         <Rating>
                           <AiFillStar size={26} color="#fff" />
                           {place.rating}
@@ -301,36 +318,29 @@ const City: React.FC = () => {
 
                   <PlacesFilter>
                     <div
-                      className={filterOption === 1 ? "focus" : ""}
-                      onClick={() => handleFilterOptions(1)}
+                      className={filterOption === "all" ? "focus" : ""}
+                      onClick={() => handleFilterOptions("all")}
                     >
                       Todas
                     </div>
-                    <div
-                      className={filterOption === 2 ? "focus" : ""}
-                      onClick={() => handleFilterOptions(2)}
-                    >
-                      Comida & Bebida
-                    </div>
-                    <div
-                      className={filterOption === 3 ? "focus" : ""}
-                      onClick={() => handleFilterOptions(3)}
-                    >
-                      Pontos Turísticos
-                    </div>
-                    <div
-                      className={filterOption === 4 ? "focus" : ""}
-                      onClick={() => handleFilterOptions(4)}
-                    >
-                      Eventos Organizados
-                    </div>
+                    {categories.map((categorie: CategoriesProps, i) => (
+                      <div
+                        className={filterOption === categorie.id ? "focus" : ""}
+                        onClick={() => handleFilterOptions(categorie.id)}
+                      >
+                        {categorie.name}
+                      </div>
+                    ))}
                   </PlacesFilter>
                 </ContentPlacesFilter>
 
                 <ContainerAllPlaces>
                   {placesFilter.map((place: PlaceProps) => (
                     <ContentTopRating key={place.id} className="allPlaces">
-                      <img src={place.image} alt={place.name} />
+                      <img
+                        src={`${process.env.REACT_APP_API_URL}/places/image/${place.image}`}
+                        alt={place.place_name}
+                      />
 
                       <Link
                         to={`/place/${place.id}`}
@@ -339,24 +349,17 @@ const City: React.FC = () => {
                         }}
                         className="informations"
                       >
-                        <h3>{place.name}</h3>
+                        <h3>{place.place_name}</h3>
 
-                        {place.category === 1 ? (
-                          <div className="category">
-                            Comida e Bebida
-                            <FiCoffee size={20} color="#F25D27" />
-                          </div>
-                        ) : place.category === 2 ? (
-                          <div className="category">
-                            Pontos Turísticos
-                            <FiCamera size={20} color="#F25D27" />
-                          </div>
-                        ) : (
-                          <div className="category">
-                            Eventos Organizados
-                            <FiCalendar size={20} color="#F25D27" />
-                          </div>
-                        )}
+                        <div className="category">
+                          {place.categorie_name}
+                          <Icon
+                            iconName={place.iconName}
+                            size={20}
+                            color="#F25D27"
+                          />
+                        </div>
+
                         <Rating>
                           <AiFillStar size={26} color="#fff" />
                           {place.rating}

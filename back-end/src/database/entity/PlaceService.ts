@@ -7,27 +7,19 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
+
 import Place from "./Place";
 
-@Entity("evaluations")
-export default class Evaluation {
+@Entity("placeservices")
+export default class PlaceService {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
   @Column()
-  name!: string;
+  timeOpen!: string;
 
   @Column()
-  avatar!: string;
-
-  @Column("text")
-  description!: string;
-
-  @Column()
-  rating!: number;
-
-  @Column("boolean", { default: 0 })
-  approved: number = 0;
+  order!: number;
 
   @Column() place_id!: string;
 

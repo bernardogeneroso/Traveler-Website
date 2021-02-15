@@ -82,11 +82,12 @@ citiesRouter.post(
     const { id } = req.params;
     const { name, description, image } = req.body;
 
+    const citiesRepo = getRepository(City);
+
     try {
       if (req.file) {
         const fileName = req.file.filename;
 
-        const citiesRepo = getRepository(City);
         const user = await citiesRepo.findOne({ id });
 
         if (!user) throw new AppError("Error on update city", 400);
@@ -97,40 +98,44 @@ citiesRouter.post(
           user.image
         );
 
-        const city = {
+        const dataCity = {
           name,
           description,
           image: fileName,
         };
 
-        await getConnection()
+        await citiesRepo
           .createQueryBuilder()
-          .update(City)
+          .update({ name, description, image })
           // @ts-ignore
-          .set(city)
+          .set(dataCity)
           .where("id = :id", { id })
           .execute();
 
         await unlinkAsyncPlaceImage(filePath);
 
-        return resp.status(200).send();
+        const updateCity = await citiesRepo.findOne({ id });
+
+        return resp.status(200).send(updateCity);
       }
 
-      const city = {
+      const dataCity = {
         name,
         description,
         image,
       };
 
-      await getConnection()
+      await citiesRepo
         .createQueryBuilder()
-        .update(City)
+        .update({ name, description, image })
         // @ts-ignore
-        .set(city)
+        .set(dataCity)
         .where("id = :id", { id })
         .execute();
 
-      return resp.status(200).send();
+      const updateCity = await citiesRepo.findOne({ id });
+
+      return resp.status(200).send(updateCity);
     } catch {
       throw new AppError("Error on update city", 400);
     }
