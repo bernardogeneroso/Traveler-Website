@@ -275,11 +275,11 @@ const Place = () => {
   const handleEventNextEdition = useMemo(() => {
     const firstDay = eventPlace?.startDay;
     const secondDay = eventPlace?.endDay;
+    const year = eventPlace?.year;
 
     if (firstDay && secondDay) {
       let monthName = "";
       const month = getMonth(new Date(secondDay));
-      const year = getYear(new Date(secondDay));
 
       switch (month) {
         case 0:

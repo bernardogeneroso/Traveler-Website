@@ -7,7 +7,10 @@ import {
   FiInfo,
   FiEdit3,
 } from "react-icons/fi";
+import DatePicker from "react-date-picker";
 import { MapContainer, TileLayer } from "react-leaflet";
+import { addDays, getYear } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
 
 import HeaderAdmin from "../../../components/Main/HeaderAdmin";
 import MenuAdmin from "../../../components/Main/MenuAdmin";
@@ -24,9 +27,10 @@ import {
   BackgroundImageCity,
   ContainerAttendance,
   ContentAttendance,
+  ContainerNextEvent,
 } from "./styles";
 import api from "../../../services/api";
-import { PlaceProps } from "../../City";
+import { CategoriesProps, PlaceProps } from "../../City";
 
 interface FormProps {
   name: string;
@@ -36,19 +40,41 @@ interface FormProps {
     file?: File;
   };
   description: string;
-  categoryCheck?: 1 | 2 | 3 | true;
+  categoryCheck?: "FiCoffee" | "FiCamera" | "FiCalendar" | true;
   local: {
     address: string;
+    phone_number: string;
   };
 }
 
 interface AttendanceProps {
+  id: string;
   open: boolean;
   day: string;
   time: {
     start: string;
     end: string;
   };
+}
+
+interface AttendanceRowProps {
+  dayOfWeek: string;
+  id: string;
+  timeOpen: string;
+  order: number;
+  place_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface EventCalendarProps {
+  id: string;
+  startDay: Date;
+  endDay: Date;
+  year: string;
+  place_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Props {
@@ -74,6 +100,7 @@ const Edit: React.FC<Props> = (props) => {
       "Sabádo",
     ].map((day: string) => {
       return {
+        id: uuidv4(),
         open: false,
         day,
         time: {
@@ -85,6 +112,11 @@ const Edit: React.FC<Props> = (props) => {
 
     return attendanceRows;
   });
+  const [datePicker, setDatePicker] = useState({
+    startDay: addDays(new Date(), 2),
+    endDay: addDays(new Date(), 5),
+  });
+  const [categories, setCategories] = useState<CategoriesProps[]>([]);
   const [form, setForm] = useState<FormProps>({
     name: "",
     description: "",
@@ -94,6 +126,7 @@ const Edit: React.FC<Props> = (props) => {
     },
     local: {
       address: "",
+      phone_number: "",
     },
   });
 
@@ -105,25 +138,84 @@ const Edit: React.FC<Props> = (props) => {
     api
       .get<PlaceProps>(`/places/${props.match.params.id}`)
       .then(({ data }) => {
+        // @ts-ignore
         setForm((state) => {
           return {
             name: data.place_name,
             description: data.description,
-            categoryCheck:
-              data.iconName === "FiCoffee"
-                ? 1
-                : data.iconName === "FiCamera"
-                ? 2
-                : 3,
-            imageSettings: { ...state.imageSettings, image: data.image },
-            local: { address: data.address },
+            categoryCheck: data.iconName,
+            imageSettings: {
+              ...state.imageSettings,
+              image: data.image,
+            },
+            local: {
+              address: data.address,
+              phone_number: data.phone_number ? data.phone_number : "",
+            },
           };
         });
       })
-      .catch((err) => {
+      .catch(() => {
         history.push("/cities");
       });
   }, [props.match.params.id, history]);
+
+  useEffect(() => {
+    if (form.categoryCheck === "FiCoffee") {
+      api
+        .get(`/places/show/service/${props.match.params.id}`)
+        .then(({ data }) => {
+          if (Object.keys(data).length === 0) return;
+
+          setAttendances(() => {
+            const attendanceRows: AttendanceProps[] = data.map(
+              (attendanceRow: AttendanceRowProps) => {
+                const timeOpen = attendanceRow.timeOpen.split(" - ");
+
+                if (attendanceRow.timeOpen === "Fechado") {
+                  return {
+                    open: false,
+                    day: attendanceRow.dayOfWeek,
+                    id: attendanceRow.id,
+                    time: {
+                      start: "-",
+                      end: "-",
+                    },
+                  };
+                }
+
+                return {
+                  open: true,
+                  day: attendanceRow.dayOfWeek,
+                  id: attendanceRow.id,
+                  time: {
+                    start: timeOpen[0],
+                    end: timeOpen[1],
+                  },
+                };
+              }
+            );
+
+            return attendanceRows;
+          });
+        });
+    } else if (form.categoryCheck === "FiCalendar") {
+      api
+        .get<EventCalendarProps>(`/places/show/event/${props.match.params.id}`)
+        .then(({ data }) => {
+          setDatePicker({
+            startDay: new Date(data.startDay),
+            endDay: new Date(data.endDay),
+          });
+        });
+    }
+  }, [form.categoryCheck, props.match.params.id]);
+
+  useEffect(() => {
+    api.get(`/categories`).then(({ data }) => {
+      setCategories(data);
+    });
+  }, []);
 
   const handleForm = useCallback((value: number, event: any) => {
     if (value === 1) {
@@ -145,7 +237,11 @@ const Edit: React.FC<Props> = (props) => {
 
       setForm((state) => ({
         ...state,
-        image: file,
+        imageSettings: {
+          ...state.imageSettings,
+          file: file,
+          change: 1,
+        },
       }));
     } else if (value === 4) {
       const address = event.target.value;
@@ -158,44 +254,27 @@ const Edit: React.FC<Props> = (props) => {
         },
       }));
     } else if (value === 5) {
-      const postalCode_1 = event.target.value;
+      const phone_number = event.target.value;
 
       setForm((state) => ({
         ...state,
         local: {
           ...state.local,
-          postalCode_1,
-        },
-      }));
-    } else if (value === 6) {
-      const postalCode_2 = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          postalCode_2,
-        },
-      }));
-    } else if (value === 7) {
-      const locality = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          locality,
+          phone_number,
         },
       }));
     }
   }, []);
 
-  const handleCategories = useCallback((category: 1 | 2 | 3) => {
-    setForm((state) => ({
-      ...state,
-      categoryCheck: category,
-    }));
-  }, []);
+  const handleCategories = useCallback(
+    (category: "FiCoffee" | "FiCamera" | "FiCalendar") => {
+      setForm((state) => ({
+        ...state,
+        categoryCheck: category,
+      }));
+    },
+    []
+  );
 
   const handleToggleAttendance = useCallback((day: string) => {
     setAttendances((state) => {
@@ -267,6 +346,18 @@ const Edit: React.FC<Props> = (props) => {
     []
   );
 
+  const handleDataPicker = useCallback(
+    (eventName: string, value: Date | Date[]) => {
+      setDatePicker((state) => {
+        return {
+          ...state,
+          [eventName]: value,
+        };
+      });
+    },
+    []
+  );
+
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -283,65 +374,85 @@ const Edit: React.FC<Props> = (props) => {
       }
 
       try {
-        /*var {
-          name: nameCity,
-          description: descriptionCity,
-          image: imageCity,
-        } = props.location.state.city;
-
-        var formDataCity = new FormData();
-        formDataCity.append("city-image", imageCity);
-        formDataCity.append("name", nameCity);
-        formDataCity.append("description", descriptionCity);
-
-        const {
-          data: { id, image: pathImage },
-        } = await api.post("/cities/create", formDataCity);
-
-        /*addCity({
-          id,
-          image: pathImage,
-          name: nameCity,
-          description: descriptionCity,
-        });
-
-        addToast({
-          title: "Cidade criada com sucesso",
-          description: `A cidade ${nameCity} foi criada com sucesso!`,
-          type: "success",
-        });
-
         var {
           name,
-          image,
           description,
           categoryCheck,
-          local: { address, locality, postalCode_1, postalCode_2 },
+          imageSettings: { image, file, change },
+          local: { address, phone_number },
         } = form;
 
-        if (image === true) return;
-        if (categoryCheck === true) return;
-
-        const addressConcated = `${address}, ${postalCode_1}-${postalCode_2}, ${locality}`;
-
         var formData = new FormData();
-        formData.append("place-image", image);
+        change === 1 && file
+          ? formData.append("update-image", file)
+          : formData.append("image", image);
+        phone_number !== "" && formData.append("phone_number", phone_number);
         formData.append("name", name);
         formData.append("description", description);
-        formData.append("category", categoryCheck.toString());
-        formData.append("address", addressConcated);
-        formData.append("rating", "4.8");
+        formData.append("address", address);
 
-        await api.post(`/places/create/${id}`, formData);
+        const lastPlace = localStorage.getItem("Traveler::EditPlace");
+        if (!lastPlace) return;
+
+        if (categoryCheck === "FiCoffee") {
+          const findCategorie = categories.find(
+            (categorie) => categorie.iconName === "FiCoffee"
+          );
+
+          if (!findCategorie) return;
+
+          const service = attendances.map((attendanceRow) => {
+            const firstHour = attendanceRow.time.start;
+            const lastHour = attendanceRow.time.end;
+
+            if (firstHour === "-" && lastHour === "-") return "Fechado";
+
+            return `${firstHour} - ${lastHour}`;
+          });
+
+          formData.append("categorie_id", findCategorie.id);
+
+          await api.post(`/places/update/${props.match.params.id}`, formData);
+          await api.post(`/places/create/service/${props.match.params.id}`, {
+            service,
+          });
+        } else if (categoryCheck === "FiCalendar") {
+          const findCategorie = categories.find(
+            (categorie) => categorie.iconName === "FiCalendar"
+          );
+
+          if (!findCategorie) return;
+
+          const event = {
+            startDay: new Date(datePicker.startDay),
+            endDay: new Date(datePicker.endDay),
+            year: getYear(datePicker.startDay),
+          };
+
+          formData.append("categorie_id", findCategorie.id);
+
+          await api.post(`/places/update/${props.match.params.id}`, formData);
+          await api.post(
+            `/places/create/event/${props.match.params.id}`,
+            event
+          );
+        } else if (categoryCheck === "FiCamera") {
+          const findCategorie = categories.find(
+            (categorie) => categorie.iconName === "FiCamera"
+          );
+
+          if (!findCategorie) return;
+
+          formData.append("categorie_id", findCategorie.id);
+
+          await api.post(`/places/update/${props.match.params.id}`, formData);
+        }
 
         addToast({
-          title: "Local criada com sucesso",
-          description: `O local ${name} foi criada com sucesso!`,
+          title: "Local atualizado com sucesso",
+          description: `O local ${name} foi atualizado com sucesso!`,
           type: "success",
         });
-
-        setNewCityId(id);
-        handleToggleFormRegistered();*/
       } catch (err) {
         addToast({
           title: "Error on create",
@@ -349,7 +460,15 @@ const Edit: React.FC<Props> = (props) => {
         });
       }
     },
-    [form, addToast]
+    [
+      form,
+      addToast,
+      props.match.params.id,
+      attendances,
+      datePicker.endDay,
+      datePicker.startDay,
+      categories,
+    ]
   );
 
   return (
@@ -391,7 +510,7 @@ const Edit: React.FC<Props> = (props) => {
                 <label>Foto da cidade *</label>
                 <BackgroundImageCity
                   image={
-                    typeof form.imageSettings.image === "string"
+                    !form.imageSettings.change
                       ? `${process.env.REACT_APP_API_URL}/places/image/${form.imageSettings.image}`
                       : ""
                   }
@@ -418,7 +537,12 @@ const Edit: React.FC<Props> = (props) => {
               </div>
 
               <div className="form-textarea">
-                <label htmlFor="description">Descrição do local *</label>
+                <label
+                  htmlFor="description"
+                  className={form.description.length > 320 ? "error" : ""}
+                >
+                  Descrição do local *
+                </label>
                 <textarea
                   name="description"
                   id="description"
@@ -443,6 +567,7 @@ const Edit: React.FC<Props> = (props) => {
                   <ContentCategories
                     key="1"
                     className={form.categoryCheck === true ? "error" : ""}
+                    selected={form.categoryCheck === "FiCoffee" ? true : false}
                   >
                     <div className={form.categoryCheck === true ? "error" : ""}>
                       <FiCoffee size={46} color="#F25D27" />
@@ -451,11 +576,11 @@ const Edit: React.FC<Props> = (props) => {
                         <input
                           name="selectCoffee1"
                           type="checkbox"
-                          onChange={() => handleCategories(1)}
+                          onChange={() => handleCategories("FiCoffee")}
                           checked={
                             form.categoryCheck === undefined
                               ? false
-                              : form.categoryCheck === 1 && true
+                              : form.categoryCheck === "FiCoffee" && true
                           }
                           id="selectCoffee1"
                         />
@@ -470,6 +595,7 @@ const Edit: React.FC<Props> = (props) => {
                   <ContentCategories
                     key="2"
                     className={form.categoryCheck === true ? "error" : ""}
+                    selected={form.categoryCheck === "FiCamera" ? true : false}
                   >
                     <div className={form.categoryCheck === true ? "error" : ""}>
                       <FiCamera size={46} color="#F25D27" />
@@ -478,11 +604,11 @@ const Edit: React.FC<Props> = (props) => {
                         <input
                           name="selectCoffee2"
                           type="checkbox"
-                          onChange={() => handleCategories(2)}
+                          onChange={() => handleCategories("FiCamera")}
                           checked={
                             form.categoryCheck === undefined
                               ? false
-                              : form.categoryCheck === 2 && true
+                              : form.categoryCheck === "FiCamera" && true
                           }
                           id="selectCoffee2"
                         />
@@ -497,6 +623,9 @@ const Edit: React.FC<Props> = (props) => {
                   <ContentCategories
                     key="3"
                     className={form.categoryCheck === true ? "error" : ""}
+                    selected={
+                      form.categoryCheck === "FiCalendar" ? true : false
+                    }
                   >
                     <div className={form.categoryCheck === true ? "error" : ""}>
                       <FiCalendar size={46} color="#F25D27" />
@@ -505,11 +634,11 @@ const Edit: React.FC<Props> = (props) => {
                         <input
                           name="selectCoffee3"
                           type="checkbox"
-                          onChange={() => handleCategories(3)}
+                          onChange={() => handleCategories("FiCalendar")}
                           checked={
                             form.categoryCheck === undefined
                               ? false
-                              : form.categoryCheck === 3 && true
+                              : form.categoryCheck === "FiCalendar" && true
                           }
                           id="selectCoffee3"
                         />
@@ -524,7 +653,7 @@ const Edit: React.FC<Props> = (props) => {
                 </ContainerCategories>
               </div>
 
-              {form.categoryCheck === 1 && (
+              {form.categoryCheck === "FiCoffee" && (
                 <div className="form-attendance">
                   <h3>Atendimento</h3>
 
@@ -532,10 +661,11 @@ const Edit: React.FC<Props> = (props) => {
 
                   <ContainerAttendance>
                     {attendances.map((attendance: AttendanceProps) => (
-                      <ContentAttendance>
-                        <div>
+                      <ContentAttendance key={attendance.id}>
+                        <div className="contentInformation">
                           <span>{attendance.day}</span>
                           <button
+                            type="button"
                             className={attendance.open ? "focus" : ""}
                             onClick={() =>
                               handleToggleAttendance(attendance.day)
@@ -544,6 +674,7 @@ const Edit: React.FC<Props> = (props) => {
                             Aberto
                           </button>
                           <button
+                            type="button"
                             className={attendance.open ? "" : "focus"}
                             onClick={() =>
                               handleToggleAttendance(attendance.day)
@@ -552,7 +683,13 @@ const Edit: React.FC<Props> = (props) => {
                             Fechado
                           </button>
                         </div>
-                        <div className={attendance.open ? "" : "block"}>
+                        <div
+                          className={
+                            attendance.open
+                              ? "contentTime"
+                              : "contentTime block"
+                          }
+                        >
                           <span>Das</span>
                           <input
                             type="text"
@@ -584,6 +721,35 @@ const Edit: React.FC<Props> = (props) => {
                 </div>
               )}
 
+              {form.categoryCheck === "FiCalendar" && (
+                <div className="form-next-event">
+                  <h3>Próximo acontecimento</h3>
+
+                  <hr />
+
+                  <ContainerNextEvent>
+                    <span className="first">De</span>
+                    <DatePicker
+                      value={datePicker.startDay}
+                      onChange={(value) => handleDataPicker("startDay", value)}
+                      format="dd/MM/y"
+                      clearIcon={null}
+                      calendarIcon={null}
+                      className="format-date-picker"
+                    />
+                    <span className="last">Até</span>
+                    <DatePicker
+                      value={datePicker.endDay}
+                      onChange={(value) => handleDataPicker("endDay", value)}
+                      format="dd/MM/y"
+                      clearIcon={null}
+                      calendarIcon={null}
+                      className="format-date-picker"
+                    />
+                  </ContainerNextEvent>
+                </div>
+              )}
+
               <div className="form-location">
                 <h3>Endereço</h3>
 
@@ -601,6 +767,21 @@ const Edit: React.FC<Props> = (props) => {
                       required
                     />
                   </div>
+                  {form.categoryCheck === "FiCoffee" && (
+                    <div className="form-phone-number">
+                      <label htmlFor="phone-number">
+                        Número do telefone/telemóvel
+                      </label>
+                      <input
+                        name="phone-number"
+                        type="text"
+                        onChange={(event) => handleForm(5, event)}
+                        id="phone-number"
+                        value={form.local.phone_number}
+                        required
+                      />
+                    </div>
+                  )}
                 </ContainerAddress>
               </div>
 

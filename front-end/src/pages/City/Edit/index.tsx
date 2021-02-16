@@ -171,7 +171,7 @@ const Edit: React.FC = () => {
                 <label>Foto da cidade *</label>
                 <BackgroundImageCity
                   image={
-                    typeof form.imageSettings.image === "string"
+                    form.imageSettings.change === 0
                       ? form.imageSettings.image
                       : ""
                   }

@@ -65,7 +65,7 @@ export interface PlaceProps {
   updated_at: string;
 }
 
-interface CategoriesProps {
+export interface CategoriesProps {
   id: string;
   name: string;
   iconName: string;
@@ -268,9 +268,11 @@ const City: React.FC = () => {
 
                       {!!user && (
                         <ContainerOptionsPlace>
-                          <div>
-                            <FiEdit3 size={20} color="#617480" />
-                          </div>
+                          <Link to={`/place/edit/${place.id}`}>
+                            <div>
+                              <FiEdit3 size={20} color="#617480" />
+                            </div>
+                          </Link>
                           <div>
                             <FiTrash size={20} color="#617480" />
                           </div>
@@ -368,9 +370,11 @@ const City: React.FC = () => {
 
                       {!!user && (
                         <ContainerOptionsPlace>
-                          <div>
-                            <FiEdit3 size={20} color="#617480" />
-                          </div>
+                          <Link to={`/place/edit/${place.id}`}>
+                            <div>
+                              <FiEdit3 size={20} color="#617480" />
+                            </div>
+                          </Link>
                           <div>
                             <FiTrash size={20} color="#617480" />
                           </div>

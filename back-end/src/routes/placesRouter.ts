@@ -157,6 +157,8 @@ placesRouter.post("/create/service/:id", async (req, resp) => {
   const placeServiceRepo = getRepository(PlaceService);
 
   try {
+    await placeServiceRepo.delete({ place_id: id });
+
     await placeServiceRepo
       .createQueryBuilder()
       .insert()
@@ -208,6 +210,20 @@ placesRouter.get("/show/service/:id", async (req, resp) => {
   }
 });
 
+placesRouter.delete("/delete/service/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const placeServiceRepo = getRepository(PlaceService);
+
+  try {
+    await placeServiceRepo.delete({ id });
+
+    return resp.status(200).send();
+  } catch {
+    throw new AppError("Error on delete service", 400);
+  }
+});
+
 placesRouter.post("/create/event/:id", async (req, resp) => {
   const { id } = req.params;
   const { startDay, endDay, year } = req.body;
@@ -215,6 +231,8 @@ placesRouter.post("/create/event/:id", async (req, resp) => {
   const placeEventRepo = getRepository(PlaceEvent);
 
   try {
+    await placeEventRepo.delete({ place_id: id });
+
     await placeEventRepo
       .createQueryBuilder()
       .insert()
@@ -228,7 +246,7 @@ placesRouter.post("/create/event/:id", async (req, resp) => {
 
     return resp.status(200).send();
   } catch (err) {
-    throw new AppError("Error on create event of place", 400);
+    throw new AppError(err, 400); //"Error on create event of place"
   }
 });
 
@@ -253,6 +271,20 @@ placesRouter.get("/show/event/:id", async (req, resp) => {
   }
 });
 
+placesRouter.delete("/delete/event/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const placeEventRepo = getRepository(PlaceEvent);
+
+  try {
+    await placeEventRepo.delete({ id });
+
+    return resp.status(200).send();
+  } catch {
+    throw new AppError("Error on delete event", 400);
+  }
+});
+
 placesRouter.post(
   "/update/:id",
   upload.single("update-image"),
@@ -263,15 +295,16 @@ placesRouter.post(
       description,
       image,
       address,
-      rating,
       phone_number,
+      categorie_id,
     } = req.body;
+
+    const placesRepo = getRepository(Place);
 
     try {
       if (req.file) {
         const fileName = req.file.filename;
 
-        const placesRepo = getRepository(Place);
         const place = await placesRepo.findOne({ id });
 
         if (!place) throw new AppError("Error on update place", 400);
@@ -287,13 +320,20 @@ placesRouter.post(
           description,
           image: fileName,
           address,
-          rating,
           phone_number,
+          categorie_id,
         };
 
-        await getConnection()
+        await placesRepo
           .createQueryBuilder()
-          .update(Place)
+          .update({
+            name,
+            description,
+            image,
+            address,
+            phone_number,
+            categorie_id,
+          })
           // @ts-ignore
           .set(updatePlace)
           .where("id = :id", { id })
@@ -309,13 +349,20 @@ placesRouter.post(
         description,
         image,
         address,
-        rating,
         phone_number,
+        categorie_id,
       };
 
-      await getConnection()
+      await placesRepo
         .createQueryBuilder()
-        .update(Place)
+        .update({
+          name,
+          description,
+          image,
+          address,
+          phone_number,
+          categorie_id,
+        })
         // @ts-ignore
         .set(updatePlace)
         .where("id = :id", { id })
@@ -323,7 +370,7 @@ placesRouter.post(
 
       return resp.status(200).send();
     } catch (err) {
-      throw new AppError("Error on update place", 400);
+      throw new AppError(err, 400);
     }
   }
 );

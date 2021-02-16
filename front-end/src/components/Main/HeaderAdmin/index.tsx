@@ -73,9 +73,11 @@ const Header: React.FC<HeaderProps> = ({
 
           {placeId && (
             <ContainerOptions>
-              <div className="edit">
-                <FiEdit3 size={20} color="#617480" />
-              </div>
+              <Link to={`/place/edit/${placeId}`}>
+                <div className="edit">
+                  <FiEdit3 size={20} color="#617480" />
+                </div>
+              </Link>
               <div className="trash">
                 <FiTrash size={20} color="#617480" />
               </div>

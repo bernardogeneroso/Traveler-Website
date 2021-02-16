@@ -10,6 +10,10 @@ interface BackgroundImageCityProps {
   imageChange: boolean;
 }
 
+interface ContentCategoriesProps {
+  selected: boolean;
+}
+
 export const Container = styled.div`
   background: #f5f8fa;
 
@@ -148,6 +152,10 @@ export const Content = styled.div<ContentProps>`
       font-weight: 400;
       font-size: 14px;
       margin-bottom: 8px;
+
+      &.error {
+        color: #c53030;
+      }
     }
 
     textarea {
@@ -207,6 +215,16 @@ export const Content = styled.div<ContentProps>`
   }
 
   .form-attendance {
+    h3 {
+      margin-top: 42px;
+    }
+
+    hr {
+      margin-bottom: 36px;
+    }
+  }
+
+  .form-next-event {
     h3 {
       margin-top: 42px;
     }
@@ -290,7 +308,7 @@ export const ContainerCategories = styled.div`
   width: calc(100% + 32px);
 `;
 
-export const ContentCategories = styled.div`
+export const ContentCategories = styled.div<ContentCategoriesProps>`
   flex-basis: 0;
   flex-grow: 1;
   max-width: 100%;
@@ -298,7 +316,10 @@ export const ContentCategories = styled.div`
   margin-right: 30px;
   margin-bottom: 18px;
 
-  background: #f5f8fa;
+  background: ${(props) =>
+    props.selected
+      ? "linear-gradient(90deg, #FFF8F5 0%, #F5F8FA 100%)"
+      : "#f5f8fa"};
   border: 1px solid #dce2e6;
   border-radius: 10px;
 
@@ -390,7 +411,8 @@ export const ContentCategories = styled.div`
 `;
 
 export const ContainerAddress = styled.div`
-  .form-address {
+  .form-address,
+  .form-phone-number {
     display: flex;
     flex-direction: column;
     margin-bottom: 18px;
@@ -704,7 +726,7 @@ export const ContentAttendance = styled.div`
   height: 56px;
   margin-bottom: 20px;
 
-  div:nth-child(1) {
+  .contentInformation {
     span {
       display: inline-block;
       width: 64px;
@@ -772,7 +794,7 @@ export const ContentAttendance = styled.div`
     }
   }
 
-  div:nth-child(2) {
+  .contentTime {
     display: flex;
     flex-direction: row;
 
@@ -809,6 +831,85 @@ export const ContentAttendance = styled.div`
       &[type="text" i] {
         padding: 1rem;
       }
+    }
+  }
+`;
+
+export const ContainerNextEvent = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 56px;
+
+  span {
+    font-weight: 400;
+    font-size: 14px;
+    color: #617480;
+
+    &.first {
+      margin-right: 14px;
+    }
+
+    &.last {
+      margin-left: 14px;
+      margin-right: 14px;
+    }
+  }
+
+  .format-date-picker {
+    .react-date-picker__wrapper {
+      border: 1px solid #dce2e6;
+      background: #f5f8fa;
+      border-radius: 10px;
+      height: 56px;
+      width: 170px;
+
+      .react-date-picker__inputGroup {
+        text-align: center;
+
+        .react-date-picker__inputGroup__leadingZero {
+          color: #123952;
+          font-size: 16px;
+          font-weight: 500;
+        }
+
+        input {
+          background: none;
+          border: none;
+          color: #123952;
+          font-size: 16px;
+          font-weight: 500;
+
+          &[type="text" i] {
+            padding: 1rem;
+          }
+        }
+      }
+    }
+
+    .react-calendar__tile--now {
+      background: #f25d27;
+      color: white;
+    }
+
+    .react-calendar__tile--active {
+      background: #123952;
+    }
+  }
+
+  input {
+    height: 100%;
+    background: #f5f8fa;
+    border: 1px solid #dce2e6;
+    border-radius: 10px;
+    width: 170px;
+
+    color: #123952;
+    font-size: 16px;
+    font-weight: 500;
+
+    &[type="text" i] {
+      padding: 1rem;
     }
   }
 `;
