@@ -15,12 +15,17 @@ import {
 
 import logo from "../../../assets/menuadmin/logo.png";
 
-const MenuAdmin = () => {
+interface MenuAdminProps {
+  optionSelectedMenu?: 1 | 2 | 3;
+}
+
+const MenuAdmin: React.FC<MenuAdminProps> = ({ optionSelectedMenu }) => {
   const { signOut } = useAuth();
 
-  const [optionSelected, setOptionSelected] = useState<number>(1);
+  const [optionSelected, setOptionSelected] = useState<1 | 2 | 3>(() => {
+    return optionSelectedMenu ? optionSelectedMenu : 1;
+  });
   const [modalLeave, setModalLeave] = useState<boolean>(false);
-  const [buttonLeave, setButtonLeave] = useState<number>(1);
 
   const handleToggleModalLeave = useCallback(() => {
     setModalLeave((state) => !state);
@@ -40,7 +45,7 @@ const MenuAdmin = () => {
               title="Cidades"
             />
           </Link>
-          <Link to="/cities">
+          <Link to="/categories">
             <FiGrid
               size={24}
               onClick={() => setOptionSelected(2)}
@@ -69,23 +74,11 @@ const MenuAdmin = () => {
       {modalLeave && (
         <ContainerModalLeave key="modalLeave">
           <DialogModalLeave>
-            <ContentModalLeave buttonAnimation={buttonLeave}>
+            <ContentModalLeave>
               <span>Você quer mesmo sair?</span>
               <div>
-                <button
-                  onClick={handleToggleModalLeave}
-                  onMouseEnter={() => setButtonLeave(2)}
-                  onMouseLeave={() => setButtonLeave(1)}
-                >
-                  Não
-                </button>
-                <button
-                  onClick={signOut}
-                  onMouseEnter={() => setButtonLeave(2)}
-                  onMouseLeave={() => setButtonLeave(1)}
-                >
-                  Sim
-                </button>
+                <button onClick={handleToggleModalLeave}>Não</button>
+                <button onClick={signOut}>Sim</button>
               </div>
             </ContentModalLeave>
           </DialogModalLeave>

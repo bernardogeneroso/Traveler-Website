@@ -89,18 +89,23 @@ const Stage02: React.FC<Props> = (props) => {
 
   const handleForm = useCallback((value: number, event: any) => {
     if (value === 1) {
-      const name = event.target.value;
+      const value = event.target.value;
+      const target = event.target.name;
 
       setForm((state) => ({
         ...state,
-        name,
+        [target]: value,
       }));
     } else if (value === 2) {
-      const description = event.target.value;
+      const value = event.target.value;
+      const target = event.target.name;
 
       setForm((state) => ({
         ...state,
-        description,
+        local: {
+          ...state.local,
+          [target]: value,
+        },
       }));
     } else if (value === 3) {
       const file = event.target.files[0];
@@ -108,46 +113,6 @@ const Stage02: React.FC<Props> = (props) => {
       setForm((state) => ({
         ...state,
         image: file,
-      }));
-    } else if (value === 4) {
-      const address = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          address,
-        },
-      }));
-    } else if (value === 5) {
-      const postalCode_1 = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          postalCode_1,
-        },
-      }));
-    } else if (value === 6) {
-      const postalCode_2 = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          postalCode_2,
-        },
-      }));
-    } else if (value === 7) {
-      const locality = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          locality,
-        },
       }));
     }
   }, []);
@@ -199,16 +164,9 @@ const Stage02: React.FC<Props> = (props) => {
         formDataCity.append("name", nameCity);
         formDataCity.append("description", descriptionCity);
 
-        const {
-          data: { id, image: pathImage },
-        } = await api.post("/cities/create", formDataCity);
+        const { data } = await api.post("/cities/create", formDataCity);
 
-        /*addCity({
-          id,
-          image: pathImage,
-          name: nameCity,
-          description: descriptionCity,
-        });*/
+        addCity(data);
 
         addToast({
           title: "Cidade criada com sucesso",
@@ -237,7 +195,7 @@ const Stage02: React.FC<Props> = (props) => {
         formData.append("address", addressConcated);
         formData.append("rating", "4.8");
 
-        await api.post(`/places/create/${id}`, formData);
+        await api.post(`/places/create/${data.id}`, formData);
 
         addToast({
           title: "Local criada com sucesso",
@@ -245,7 +203,7 @@ const Stage02: React.FC<Props> = (props) => {
           type: "success",
         });
 
-        setNewCityId(id);
+        setNewCityId(data.id);
         handleToggleFormRegistered();
       } catch (err) {
         addToast({
@@ -254,14 +212,22 @@ const Stage02: React.FC<Props> = (props) => {
         });
       }
     },
-    [form, props.location.state?.city, addToast, handleToggleFormRegistered]
+    [
+      form,
+      props.location.state?.city,
+      addToast,
+      handleToggleFormRegistered,
+      addCity,
+    ]
   );
 
   return (
     <Container>
       <HeaderAdmin
         lastPage="cities"
-        middleContent="Adicionar um local"
+        MiddleContent={{
+          message: "Adicionar um local",
+        }}
         stage={2}
       />
       <MenuAdmin />
@@ -321,7 +287,7 @@ const Stage02: React.FC<Props> = (props) => {
                   name="description"
                   id="description"
                   rows={10}
-                  onChange={(event) => handleForm(2, event)}
+                  onChange={(event) => handleForm(1, event)}
                   required
                 />
                 <span>
@@ -432,7 +398,7 @@ const Stage02: React.FC<Props> = (props) => {
                     <input
                       name="address"
                       type="text"
-                      onChange={(event) => handleForm(4, event)}
+                      onChange={(event) => handleForm(2, event)}
                       id="address"
                       required
                     />
@@ -446,7 +412,7 @@ const Stage02: React.FC<Props> = (props) => {
                         <input
                           name="postalCode1"
                           type="text"
-                          onChange={(event) => handleForm(5, event)}
+                          onChange={(event) => handleForm(2, event)}
                           pattern="[0-9]{4}"
                           placeholder="0000"
                           required
@@ -455,7 +421,7 @@ const Stage02: React.FC<Props> = (props) => {
                         <input
                           name="postalCode2"
                           type="text"
-                          onChange={(event) => handleForm(6, event)}
+                          onChange={(event) => handleForm(2, event)}
                           pattern="[0-9]{3}"
                           placeholder="000"
                           required
@@ -468,7 +434,7 @@ const Stage02: React.FC<Props> = (props) => {
                       <input
                         name="locality"
                         type="text"
-                        onChange={(event) => handleForm(7, event)}
+                        onChange={(event) => handleForm(2, event)}
                         id="locality"
                         required
                       />
@@ -499,7 +465,7 @@ const Stage02: React.FC<Props> = (props) => {
                   <span>Preencha todos os dados com cuidado.</span>
                 </div>
 
-                <button>Concluir cadastro</button>
+                <button>Concluir registo</button>
               </footer>
             </Content>
           </form>

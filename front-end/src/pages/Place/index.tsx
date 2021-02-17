@@ -4,7 +4,7 @@ import { FiMessageSquare } from "react-icons/fi";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { CgSpinnerTwo } from "react-icons/cg";
 import { AiFillStar, AiOutlineStar, AiOutlineClose } from "react-icons/ai";
-import { getDay, getYear, getMonth, eachDayOfInterval } from "date-fns";
+import { getDay, getMonth, eachDayOfInterval } from "date-fns";
 import { MapContainer, TileLayer } from "react-leaflet";
 
 import Header from "../../components/Main/Header";
@@ -68,7 +68,6 @@ import {
 } from "./styles";
 import { FiInfo } from "react-icons/fi";
 import Icon from "../../components/Icon";
-import { parseISO } from "date-fns/esm/fp";
 
 interface EvaluationsProps {
   id: number;
@@ -402,7 +401,7 @@ const Place = () => {
                   <MenuAdmin />
                   <HeaderAdmin
                     lastPage={`city/${place.city_id}`}
-                    placeId={place.id}
+                    place={place}
                   />
                 </>
               ) : (

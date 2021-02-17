@@ -64,20 +64,14 @@ const Edit: React.FC = () => {
 
   const handleForm = useCallback((value: number, event: any) => {
     if (value === 1) {
-      const name = event.target.value;
+      const value = event.target.value;
+      const target = event.target.name;
 
       setForm((state) => ({
         ...state,
-        name,
+        [target]: value,
       }));
     } else if (value === 2) {
-      const description = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        description,
-      }));
-    } else if (value === 3) {
       const file = event.target.files[0];
 
       setForm((state) => ({
@@ -136,7 +130,9 @@ const Edit: React.FC = () => {
     <Container>
       <HeaderAdmin
         lastPage="cities"
-        middleContent="Editar"
+        MiddleContent={{
+          message: "Editar",
+        }}
         cityEditName={form.name}
       />
       <MenuAdmin />
@@ -203,7 +199,7 @@ const Edit: React.FC = () => {
                   name="description"
                   id="description"
                   rows={10}
-                  onChange={(event) => handleForm(2, event)}
+                  onChange={(event) => handleForm(1, event)}
                   value={form.description}
                   required
                 />
@@ -221,7 +217,7 @@ const Edit: React.FC = () => {
                   <span>Preencha todos os dados com cuidado.</span>
                 </div>
 
-                <button type="submit">Salvar alterações</button>
+                <button type="submit">Quardar alterações</button>
               </footer>
             </Content>
           </form>

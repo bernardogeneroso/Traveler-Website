@@ -64,7 +64,7 @@ const SignIn = () => {
 
         await signIn({ email: data.email, password: data.password }, remember);
 
-        history.push("/cities");
+        history.goBack();
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const erros = getValidationErrors(err);

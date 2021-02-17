@@ -1,10 +1,6 @@
 import styled from "styled-components";
 import { shade } from "polished";
 
-interface ContentModalLeaveProps {
-  buttonAnimation: number;
-}
-
 export const Container = styled.div`
   position: fixed;
   top: 0;
@@ -62,7 +58,7 @@ export const DialogModalLeave = styled.div`
   align-items: center;
 `;
 
-export const ContentModalLeave = styled.div<ContentModalLeaveProps>`
+export const ContentModalLeave = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -86,10 +82,15 @@ export const ContentModalLeave = styled.div<ContentModalLeaveProps>`
       color: #fff;
       font-size: 16px;
       font-weight: 500;
-      background: ${(props) =>
-        props.buttonAnimation === 1 ? "#f25d27" : "transparent"};
+      background: transparent;
       border: 2px solid #f25d27;
       margin-right: 8px;
+
+      transition: all ease 0.2s;
+
+      &:hover {
+        background: #f25d27;
+      }
     }
 
     button:nth-child(2) {
@@ -98,9 +99,14 @@ export const ContentModalLeave = styled.div<ContentModalLeaveProps>`
       color: #fff;
       font-size: 16px;
       font-weight: 500;
-      background: ${(props) =>
-        props.buttonAnimation === 1 ? "transparent" : "#f25d27"};
+      background: transparent;
       border: 2px solid #f25d27;
+
+      transition: all ease 0.2s;
+
+      &:hover {
+        background: #f25d27;
+      }
     }
   }
 `;

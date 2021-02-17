@@ -125,7 +125,7 @@ const CitiesProvider: React.FC = ({ children }) => {
   }, []);
 
   const removeCity = useCallback(async (id: number) => {
-    await api.delete(`/cities/remove/${id}`);
+    await api.delete(`/cities/delete/${id}`);
 
     setCities((state) => {
       const filter = state.filter((city: CityProps) => city.id !== id);

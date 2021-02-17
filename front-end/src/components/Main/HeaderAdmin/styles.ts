@@ -26,9 +26,20 @@ export const ContainerStructure = styled.div`
 `;
 
 export const ContainerMiddle = styled.div`
+  display: flex;
+  align-items: center;
   font-size: 20px;
   font-weight: 400;
   color: #a0acb2;
+
+  &.active {
+    font-size: 14px;
+    color: #a0acb2;
+  }
+
+  svg {
+    margin-right: 8px;
+  }
 `;
 
 export const ContainerLeft = styled.div<ContainerLeftProps>`

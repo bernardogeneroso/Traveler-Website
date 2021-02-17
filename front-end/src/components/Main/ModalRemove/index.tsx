@@ -1,8 +1,9 @@
 import React, { useCallback } from "react";
+import { useHistory } from "react-router-dom";
 
 import { CityProps } from "../../../pages/Cities";
 import { useCities } from "../../../hooks/CitiesManager";
-import { useHistory } from "react-router-dom";
+import { CategoriesProps, PlaceProps } from "../../../pages/City";
 
 import { Container, Dialog, Content, ContainerShow } from "./styles";
 
@@ -10,37 +11,38 @@ import vector from "../../../assets/modalremovecity/vector.png";
 import vector1 from "../../../assets/modalremovecity/vector1.png";
 import vector2 from "../../../assets/modalremovecity/vector2.png";
 import trash from "../../../assets/modalremovecity/trash.png";
+import api from "../../../services/api";
 
 interface ModalRemoveCityProps {
   city?: CityProps;
+  place?: PlaceProps;
+  categorie?: CategoriesProps;
   redirect?: boolean;
   handleToggle(): void;
 }
 
-export interface ModalRemoceCityProperties {
+export interface ModalRemoceProperties {
   toggle: boolean;
   city?: CityProps;
+  place?: PlaceProps;
 }
 
-const ModalRemoveCity: React.FC<ModalRemoveCityProps> = ({
+const ModalRemove: React.FC<ModalRemoveCityProps> = ({
   city,
+  place,
   redirect,
   handleToggle,
 }) => {
   const history = useHistory();
   const { removeCity } = useCities();
 
-  const handleRomoveCity = useCallback(
-    (id: number | undefined = undefined) => {
-      if (id) {
-        removeCity(id);
-        handleToggle();
+  const handleRomove = useCallback(async () => {
+    if (city) removeCity(city.id);
+    if (place) await api.delete(`/places/delete/${place.id}`);
+    handleToggle();
 
-        if (redirect) history.push("/cities");
-      }
-    },
-    [removeCity, handleToggle, history, redirect]
-  );
+    if (redirect) history.goBack();
+  }, [removeCity, handleToggle, history, redirect, place, city]);
 
   return (
     <Container>
@@ -53,16 +55,27 @@ const ModalRemoveCity: React.FC<ModalRemoveCityProps> = ({
             <img src={trash} alt="Trash" />
           </ContainerShow>
 
-          <h1>Excluir cidade</h1>
-
-          <span>
-            Tem certeza que quer excluir a cidade de {city?.name} e os seus 98
-            locais?
-          </span>
+          {city && (
+            <>
+              <h1>Excluir cidade</h1>
+              <span>
+                Tem certeza que quer excluir a cidade de {city.name} e os seus{" "}
+                {city.locals} locais?
+              </span>
+            </>
+          )}
+          {place && (
+            <>
+              <h1>Excluir local</h1>
+              <span>
+                Tem certeza que quer excluir o local {place.place_name}?
+              </span>
+            </>
+          )}
 
           <div>
             <button onClick={handleToggle}>Não</button>
-            <button onClick={() => handleRomoveCity(city?.id)}>Sim</button>
+            <button onClick={() => handleRomove()}>Sim</button>
           </div>
         </Content>
       </Dialog>
@@ -70,4 +83,4 @@ const ModalRemoveCity: React.FC<ModalRemoveCityProps> = ({
   );
 };
 
-export default ModalRemoveCity;
+export default ModalRemove;

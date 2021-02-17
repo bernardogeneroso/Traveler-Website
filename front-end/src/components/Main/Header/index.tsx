@@ -1,6 +1,6 @@
 import React from "react";
 import { FiSearch, FiX, FiArrowLeft } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import travelerLogo from "../../../assets/header/Logo.png";
 import { useAuth } from "../../../hooks/Auth";
@@ -27,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({
   lastPage,
   middleContent = "none",
 }) => {
+  const history = useHistory();
   const { user } = useAuth();
   const { searchCities, searchFilter, cleanSearchFilter } = useCities();
 
@@ -45,11 +46,9 @@ const Header: React.FC<HeaderProps> = ({
           </Link>
 
           {lastPage && (
-            <Link to={`/${lastPage}`}>
-              <div>
-                <FiArrowLeft size={22} color="#A0ACB2" />
-              </div>
-            </Link>
+            <div onClick={() => history.goBack()}>
+              <FiArrowLeft size={22} color="#A0ACB2" />
+            </div>
           )}
         </ContainerLogo>
 

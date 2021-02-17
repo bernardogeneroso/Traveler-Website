@@ -219,18 +219,23 @@ const Edit: React.FC<Props> = (props) => {
 
   const handleForm = useCallback((value: number, event: any) => {
     if (value === 1) {
-      const name = event.target.value;
+      const value = event.target.value;
+      const target = event.target.name;
 
       setForm((state) => ({
         ...state,
-        name,
+        [target]: value,
       }));
     } else if (value === 2) {
-      const description = event.target.value;
+      const value = event.target.value;
+      const target = event.target.name;
 
       setForm((state) => ({
         ...state,
-        description,
+        local: {
+          ...state.local,
+          [target]: value,
+        },
       }));
     } else if (value === 3) {
       const file = event.target.files[0];
@@ -241,26 +246,6 @@ const Edit: React.FC<Props> = (props) => {
           ...state.imageSettings,
           file: file,
           change: 1,
-        },
-      }));
-    } else if (value === 4) {
-      const address = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          address,
-        },
-      }));
-    } else if (value === 5) {
-      const phone_number = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        local: {
-          ...state.local,
-          phone_number,
         },
       }));
     }
@@ -475,7 +460,9 @@ const Edit: React.FC<Props> = (props) => {
     <Container>
       <HeaderAdmin
         lastPage="cities"
-        middleContent="Editar"
+        MiddleContent={{
+          message: "Editar",
+        }}
         cityEditName={form.name}
       />
       <MenuAdmin />
@@ -547,7 +534,7 @@ const Edit: React.FC<Props> = (props) => {
                   name="description"
                   id="description"
                   rows={10}
-                  onChange={(event) => handleForm(2, event)}
+                  onChange={(event) => handleForm(1, event)}
                   value={form.description}
                   required
                 />
@@ -761,7 +748,7 @@ const Edit: React.FC<Props> = (props) => {
                     <input
                       name="address"
                       type="text"
-                      onChange={(event) => handleForm(4, event)}
+                      onChange={(event) => handleForm(2, event)}
                       id="address"
                       value={form.local.address}
                       required
@@ -775,7 +762,7 @@ const Edit: React.FC<Props> = (props) => {
                       <input
                         name="phone-number"
                         type="text"
-                        onChange={(event) => handleForm(5, event)}
+                        onChange={(event) => handleForm(2, event)}
                         id="phone-number"
                         value={form.local.phone_number}
                         required
@@ -807,7 +794,7 @@ const Edit: React.FC<Props> = (props) => {
                   <span>Preencha todos os dados com cuidado.</span>
                 </div>
 
-                <button>Concluir cadastro</button>
+                <button>Guardar alterações</button>
               </footer>
             </Content>
           </form>

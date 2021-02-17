@@ -15,6 +15,9 @@ import { AiFillStar } from "react-icons/ai";
 import Header from "../../components/Main/Header";
 import HeaderAdmin from "../../components/Main/HeaderAdmin";
 import MenuAdmin from "../../components/Main/MenuAdmin";
+import ModalRemove, {
+  ModalRemoceProperties,
+} from "../../components/Main/ModalRemove";
 import Icon from "../../components/Icon";
 import { CityProps } from "../Cities";
 import api from "../../services/api";
@@ -88,6 +91,12 @@ const City: React.FC = () => {
   const [places, setPlaces] = useState<PlaceProps[]>([]);
   const [placesFilter, setPlacesFiler] = useState<PlaceProps[]>([]);
   const [categories, setCategories] = useState<CategoriesProps[]>([]);
+  const [
+    modalRemovePlace,
+    setModalRemovePlace,
+  ] = useState<ModalRemoceProperties>({
+    toggle: false,
+  });
 
   useEffect(() => {
     const { id } = params;
@@ -104,7 +113,7 @@ const City: React.FC = () => {
         setLoading(false);
       })
       .catch(() => {
-        history.push("/cities");
+        history.goBack();
       });
   }, [history, params]);
 
@@ -149,6 +158,20 @@ const City: React.FC = () => {
     },
     [filterOption]
   );
+
+  const handleSetModalRemovePlaceID = useCallback((place: PlaceProps) => {
+    setModalRemovePlace({
+      toggle: true,
+      place,
+    });
+  }, []);
+
+  const handleToggleModalRemovePlace = useCallback(() => {
+    setModalRemovePlace((state) => ({
+      ...state,
+      toggle: !state.toggle,
+    }));
+  }, []);
 
   return (
     <>
@@ -273,7 +296,9 @@ const City: React.FC = () => {
                               <FiEdit3 size={20} color="#617480" />
                             </div>
                           </Link>
-                          <div>
+                          <div
+                            onClick={() => handleSetModalRemovePlaceID(place)}
+                          >
                             <FiTrash size={20} color="#617480" />
                           </div>
                         </ContainerOptionsPlace>
@@ -375,7 +400,9 @@ const City: React.FC = () => {
                               <FiEdit3 size={20} color="#617480" />
                             </div>
                           </Link>
-                          <div>
+                          <div
+                            onClick={() => handleSetModalRemovePlaceID(place)}
+                          >
                             <FiTrash size={20} color="#617480" />
                           </div>
                         </ContainerOptionsPlace>
@@ -386,6 +413,14 @@ const City: React.FC = () => {
               </ContainerPlacesFilter>
             )}
           </ContainerContent>
+
+          {modalRemovePlace.toggle && (
+            <ModalRemove
+              place={modalRemovePlace.place}
+              handleToggle={handleToggleModalRemovePlace}
+              redirect
+            />
+          )}
         </Container>
       )}
     </>

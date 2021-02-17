@@ -16,7 +16,24 @@ categoriesRouter.get("/", async (req, resp) => {
 
     return resp.status(200).send(allCategories);
   } catch (err) {
-    throw new AppError("Error on get category", 400);
+    throw new AppError("Error on get categorie", 400);
+  }
+});
+
+categoriesRouter.get("/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const categorieRepo = getRepository(Categorie);
+
+  try {
+    const categorie = await categorieRepo.findOne({
+      where: { id },
+      cache: true,
+    });
+
+    return resp.status(200).send(categorie);
+  } catch (err) {
+    throw new AppError("Error on get categorie", 400);
   }
 });
 
@@ -26,16 +43,45 @@ categoriesRouter.post("/create", async (req, resp) => {
   const { name, iconName } = req.body;
 
   try {
-    const category = categorieRepo.create({
+    const allCategories = await categorieRepo.find({
+      cache: true,
+    });
+
+    if (allCategories.length === 3) throw "Error, creation limit(3)";
+
+    const categorie = categorieRepo.create({
       name,
       iconName,
     });
 
-    await categorieRepo.save(category);
+    await categorieRepo.save(categorie);
 
-    return resp.status(200).send(category);
+    return resp.status(200).send(categorie);
   } catch (err) {
-    throw new AppError("Error on create category", 400);
+    throw new AppError(err ? err : "Error on create categorie", 400);
+  }
+});
+
+categoriesRouter.post("/update/:id", async (req, resp) => {
+  const { id } = req.params;
+  const { name, iconName } = req.body;
+
+  const categorieRepo = getRepository(Categorie);
+
+  try {
+    await categorieRepo
+      .createQueryBuilder()
+      .update()
+      .set({
+        name,
+        iconName,
+      })
+      .where("id = :id", { id })
+      .execute();
+
+    return resp.status(200).send();
+  } catch {
+    throw new AppError("Error on update categorie", 400);
   }
 });
 
@@ -49,7 +95,7 @@ categoriesRouter.delete("/delete/:id", async (req, resp) => {
 
     return resp.status(200).send();
   } catch (err) {
-    throw new AppError("Error on delete category", 400);
+    throw new AppError("Error on delete categorie", 400);
   }
 });
 

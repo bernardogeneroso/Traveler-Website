@@ -6,9 +6,9 @@ import { FiEdit3, FiTrash } from "react-icons/fi";
 import Header from "../../components/Main/Header";
 import HeaderAdmin from "../../components/Main/HeaderAdmin";
 import MenuAdmin from "../../components/Main/MenuAdmin";
-import ModalRemoveCity, {
-  ModalRemoceCityProperties,
-} from "../../components/Main/ModalRemoveCity";
+import ModalRemove, {
+  ModalRemoceProperties,
+} from "../../components/Main/ModalRemove";
 import { useCities } from "../../hooks/CitiesManager";
 import { useAuth } from "../../hooks/Auth";
 import EmojySad from "../../assets/cities/emoji_sad.png";
@@ -44,12 +44,11 @@ const Citites: React.FC = () => {
   const { user } = useAuth();
   const { cities, filterOption, filterOptions, loading } = useCities();
 
-  const [
-    modalRemoveCity,
-    setModalRemoveCity,
-  ] = useState<ModalRemoceCityProperties>({
-    toggle: false,
-  });
+  const [modalRemoveCity, setModalRemoveCity] = useState<ModalRemoceProperties>(
+    {
+      toggle: false,
+    }
+  );
 
   const handleSetModalRemoveCityID = useCallback((city: CityProps) => {
     setModalRemoveCity({
@@ -172,7 +171,7 @@ const Citites: React.FC = () => {
           </ContainerContent>
 
           {modalRemoveCity.toggle && (
-            <ModalRemoveCity
+            <ModalRemove
               city={modalRemoveCity.city}
               handleToggle={handleToggleModalRemoveCity}
             />

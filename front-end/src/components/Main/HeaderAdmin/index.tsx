@@ -1,9 +1,11 @@
 import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FiEdit3, FiTrash, FiArrowLeft } from "react-icons/fi";
+import { IconType } from "react-icons";
 
 import { CityProps } from "../../../pages/Cities";
-import ModalRemoveCity, { ModalRemoceCityProperties } from "../ModalRemoveCity";
+import { PlaceProps } from "../../../pages/City";
+import ModalRemove, { ModalRemoceProperties } from "../ModalRemove";
 
 import {
   Container,
@@ -19,10 +21,14 @@ interface HeaderProps {
   lastPage?: string;
   cityName?: string;
   cityEditName?: string;
-  middleContent?: string;
+  MiddleContent?: {
+    message: string;
+    Icon?: IconType;
+  };
+
   stage?: number;
   city?: CityProps;
-  placeId?: number;
+  place?: PlaceProps;
   buttonPosition?: string;
 }
 
@@ -30,23 +36,29 @@ const Header: React.FC<HeaderProps> = ({
   lastPage,
   cityName,
   cityEditName,
-  middleContent,
+  MiddleContent,
   stage,
   city,
-  placeId,
+  place,
   buttonPosition,
 }) => {
-  const [
-    modalRemoveCity,
-    setModalRemoveCity,
-  ] = useState<ModalRemoceCityProperties>({
-    toggle: false,
-  });
+  const [modalRemoveCity, setModalRemoveCity] = useState<ModalRemoceProperties>(
+    {
+      toggle: false,
+    }
+  );
 
   const handleSetModalRemoveCityID = useCallback((city: CityProps) => {
     setModalRemoveCity({
       toggle: true,
       city,
+    });
+  }, []);
+
+  const handleSetModalRemovePlaceID = useCallback((place: PlaceProps) => {
+    setModalRemoveCity({
+      toggle: true,
+      place,
     });
   }, []);
 
@@ -60,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <Container>
       <ContainerStructure>
-        <ContainerLeft placeActive={placeId ? true : false}>
+        <ContainerLeft placeActive={place ? true : false}>
           {lastPage && (
             <Link to={`/${lastPage}`}>
               <div className="lastPage">
@@ -71,21 +83,29 @@ const Header: React.FC<HeaderProps> = ({
 
           {cityName && <h1>{cityName}</h1>}
 
-          {placeId && (
+          {place && (
             <ContainerOptions>
-              <Link to={`/place/edit/${placeId}`}>
+              <Link to={`/place/edit/${place.id}`}>
                 <div className="edit">
                   <FiEdit3 size={20} color="#617480" />
                 </div>
               </Link>
-              <div className="trash">
+              <div
+                className="trash"
+                onClick={() => handleSetModalRemovePlaceID(place)}
+              >
                 <FiTrash size={20} color="#617480" />
               </div>
             </ContainerOptions>
           )}
         </ContainerLeft>
 
-        {middleContent && <ContainerMiddle>{middleContent}</ContainerMiddle>}
+        {MiddleContent && (
+          <ContainerMiddle className={MiddleContent.Icon ? "active" : ""}>
+            {MiddleContent.Icon && <MiddleContent.Icon />}
+            {MiddleContent.message}
+          </ContainerMiddle>
+        )}
 
         <ContainerOptions>
           {city && (
@@ -131,8 +151,9 @@ const Header: React.FC<HeaderProps> = ({
       </ContainerStructure>
 
       {modalRemoveCity.toggle && (
-        <ModalRemoveCity
+        <ModalRemove
           city={city}
+          place={place}
           handleToggle={handleToggleModalRemoveCity}
           redirect
         />

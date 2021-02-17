@@ -29,19 +29,13 @@ const Stage01: React.FC = () => {
   const handleForm = useCallback((value: number, event: any) => {
     if (value === 1) {
       const name = event.target.value;
+      const target = event.target.name;
 
       setForm((state) => ({
         ...state,
-        name,
+        [target]: name,
       }));
     } else if (value === 2) {
-      const description = event.target.value;
-
-      setForm((state) => ({
-        ...state,
-        description,
-      }));
-    } else if (value === 3) {
       const file = event.target.files[0];
 
       setForm((state) => ({
@@ -71,7 +65,9 @@ const Stage01: React.FC = () => {
     <Container>
       <HeaderAdmin
         lastPage="cities"
-        middleContent="Adicionar uma cidade"
+        MiddleContent={{
+          message: "Adicionar uma cidade",
+        }}
         stage={1}
       />
       <MenuAdmin />
@@ -118,7 +114,7 @@ const Stage01: React.FC = () => {
                     name="file"
                     id="file-upload"
                     type="file"
-                    onChange={(event) => handleForm(3, event)}
+                    onChange={(event) => handleForm(2, event)}
                     required
                   />
                 </div>
@@ -130,7 +126,7 @@ const Stage01: React.FC = () => {
                   name="description"
                   id="description"
                   rows={10}
-                  onChange={(event) => handleForm(2, event)}
+                  onChange={(event) => handleForm(1, event)}
                   required
                 />
                 <span>
