@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useHistory, Link } from "react-router-dom";
+import { useHistory, Link, useLocation } from "react-router-dom";
 import {
   FiCalendar,
   FiCamera,
@@ -53,20 +53,17 @@ interface FormProps {
   };
 }
 
-interface Props {
-  location: {
-    state: {
-      city: {
-        name: string;
-        image: File;
-        description: string;
-      };
-    };
+interface PropsLocation {
+  city: {
+    name: string;
+    image: File;
+    description: string;
   };
 }
 
-const Stage02: React.FC<Props> = (props) => {
+const Stage02: React.FC = () => {
   const history = useHistory();
+  const location = useLocation<PropsLocation>();
   const { addToast } = useToast();
   const { addCity } = useCities();
 
@@ -84,8 +81,8 @@ const Stage02: React.FC<Props> = (props) => {
   });
 
   useEffect(() => {
-    if (!props.location.state?.city) history.push("/cities/stage01/create");
-  }, [props, history]);
+    if (!location.state.city) history.push("/cities/stage01/create");
+  }, [location.state.city, history]);
 
   const handleForm = useCallback((value: number, event: any) => {
     if (value === 1) {
@@ -157,7 +154,7 @@ const Stage02: React.FC<Props> = (props) => {
           name: nameCity,
           description: descriptionCity,
           image: imageCity,
-        } = props.location.state.city;
+        } = location.state.city;
 
         var formDataCity = new FormData();
         formDataCity.append("city-image", imageCity);
@@ -208,17 +205,12 @@ const Stage02: React.FC<Props> = (props) => {
       } catch (err) {
         addToast({
           title: "Error on create",
+          description: err.response.data.message,
           type: "error",
         });
       }
     },
-    [
-      form,
-      props.location.state?.city,
-      addToast,
-      handleToggleFormRegistered,
-      addCity,
-    ]
+    [form, location.state.city, addToast, handleToggleFormRegistered, addCity]
   );
 
   return (

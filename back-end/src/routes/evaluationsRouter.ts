@@ -8,48 +8,72 @@ import multer from "multer";
 import Evaluation from "../database/entity/Evaluation";
 import uploadConfig from "../config/multer";
 import AppError from "../errors/AppError";
+import Place from "../database/entity/Place";
+import City from "../database/entity/City";
+import Categorie from "../database/entity/Categorie";
 
 const evaluationsRouter = Router();
 
 const upload = multer(uploadConfig.multerStorageAvatarEvaluation);
 const unlinkAsyncPlaceImage = promisify(fs.unlink);
 
-evaluationsRouter.get("/:id", async (req, resp) => {
-  const { id } = req.params;
+evaluationsRouter.get("/:action", async (req, resp) => {
+  const { action } = req.params;
 
   const evaluationsRepo = getRepository(Evaluation);
 
   try {
-    const allEvaluations = await evaluationsRepo.find({
-      place_id: id,
-    });
+    let actionSQL = "";
 
-    resp.status(200).send(allEvaluations);
-  } catch {
-    throw new AppError("Error on get evaluations");
+    if (action === "recent") {
+      actionSQL = "approved = 0";
+    } else if (action === "old") {
+      actionSQL = "approved = 1 AND approved = 2";
+    } else if (action === "accepted") {
+      actionSQL = "approved = 1";
+    } else if (action === "refused") {
+      actionSQL = "approved = 2";
+    }
+
+    const allEvaluations = await evaluationsRepo
+      .createQueryBuilder("evaluation")
+      .select(
+        "evaluation.*, place.name AS place_name, city.name AS city_name, categorie.name AS categorie_name"
+      )
+      .innerJoin(Place, "place", "evaluation.place_id = place.id")
+      .innerJoin(City, "city", "place.city_id = city.id")
+      .innerJoin(Categorie, "categorie", "categorie.id = place.categorie_id")
+      .orderBy("evaluation.approved", "ASC")
+      .where(actionSQL)
+      .getRawMany();
+
+    return resp.status(200).send(allEvaluations);
+  } catch (err) {
+    throw new AppError("Error on get evaluations", 404);
   }
 });
 
 evaluationsRouter.post("/approved/:status/:id", async (req, resp) => {
   const { id, status } = req.params;
 
+  const evaluationsRepo = getRepository(Evaluation);
+
   try {
     if (!status) throw new AppError("Error on change approved");
 
-    await getConnection()
+    await evaluationsRepo
       .createQueryBuilder()
-      .update(Evaluation)
-      // @ts-ignore
+      .update()
       .set({
         approved: parseInt(status),
       })
       .where("id = :id", { id })
       .execute();
+
+    resp.status(200).send();
   } catch {
     throw new AppError("Error on change approved");
   }
-
-  resp.status(200).send();
 });
 
 evaluationsRouter.post(

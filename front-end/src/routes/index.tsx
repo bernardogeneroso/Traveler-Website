@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Redirect } from "react-router-dom";
+import { Switch, Redirect, Route } from "react-router-dom";
 
 import RouteCheck from "./Route";
 
@@ -19,47 +19,43 @@ import CreateCityStage02 from "../pages/Cities/Create/Stage02";
 import Place from "../pages/Place";
 import PlaceEdit from "../pages/Place/Edit";
 
+import Evaluation from "../pages/Evaluations";
+
 import SignIn from "../pages/SignIn";
 
-const Routes: React.FC = () => {
+const Routes: React.FC = (): JSX.Element => {
   return (
     <Switch>
-      <RouteCheck path="/" component={Main} exact />
+      <RouteCheck path="/" comp={Main} exact />
 
-      <RouteCheck path="/categories" component={Categories} exact isPrivate />
-      <RouteCheck
-        path="/categories/create"
-        component={CreateCategorie}
-        isPrivate
-      />
-      <RouteCheck
-        path="/categories/edit/:id"
-        component={EditCategorie}
-        isPrivate
-      />
+      <RouteCheck path="/evaluations" comp={Evaluation} isPrivate />
 
-      <RouteCheck path="/cities" component={Cities} exact />
+      <RouteCheck path="/categories" comp={Categories} exact isPrivate />
+      <RouteCheck path="/categories/create" comp={CreateCategorie} isPrivate />
+      <RouteCheck path="/categories/edit/:id" comp={EditCategorie} isPrivate />
+
+      <RouteCheck path="/cities" comp={Cities} exact />
       <RouteCheck
         path="/cities/stage01/create"
-        component={CreateCityStage01}
+        comp={CreateCityStage01}
         isPrivate
       />
       <RouteCheck
         path="/cities/stage02/create"
-        component={CreateCityStage02}
+        comp={CreateCityStage02}
         isPrivate
       />
 
-      <RouteCheck path="/city/:id" component={City} exact />
-      <RouteCheck path="/city/edit/:id" component={CityEdit} isPrivate />
+      <RouteCheck path="/city/:id" comp={City} exact />
+      <RouteCheck path="/city/edit/:id" comp={CityEdit} isPrivate />
 
-      <RouteCheck path="/place/:id" component={Place} exact />
-      <RouteCheck path="/place/edit/:id" component={PlaceEdit} isPrivate />
+      <RouteCheck path="/place/:id" comp={Place} exact />
+      <RouteCheck path="/place/edit/:id" comp={PlaceEdit} isPrivate />
 
-      <RouteCheck path="/signin" component={SignIn} />
+      <RouteCheck path="/signin" comp={SignIn} />
 
       {
-        <RouteCheck
+        <Route
           path="*"
           render={() => {
             return <Redirect to="/cities" />;

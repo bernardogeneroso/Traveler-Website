@@ -9,7 +9,6 @@ export const Container = styled.div`
   width: 100%;
   height: 96px;
   padding: 22px;
-
   background: #fff;
   border-bottom: 1px solid #dce2e6;
 `;
@@ -21,7 +20,7 @@ export const ContainerStructure = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-
+  position: relative;
   background: transparent;
 `;
 
@@ -63,7 +62,6 @@ export const ContainerLeft = styled.div<ContainerLeftProps>`
   .lastPage {
     display: flex;
     align-items: center;
-
     padding: 12px;
     border-radius: 10px;
     border: 1px solid #dce2e5;
@@ -159,4 +157,30 @@ export const ContainercityEditName = styled.div`
   font-size: 16px;
   font-weight: 400;
   color: #a0acb2;
+`;
+
+export const ContainerEvaluationsFilter = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: absolute;
+  right: 0;
+  margin-top: 40px;
+
+  div {
+    color: #a0acb2;
+    padding-bottom: 30px;
+    margin-right: 22px;
+    cursor: pointer;
+
+    &:last-child {
+      margin-right: 0px;
+    }
+
+    &.focus {
+      color: #123952;
+      font-weight: 700;
+      border-bottom: 2px solid #f25d27;
+    }
+  }
 `;

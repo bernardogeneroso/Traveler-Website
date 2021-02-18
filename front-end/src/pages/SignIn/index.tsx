@@ -77,7 +77,7 @@ const SignIn = () => {
         addToast({
           type: "error",
           title: "Authentication error",
-          description: err.response.data.error_message,
+          description: err.response.data.message,
         });
       }
     },

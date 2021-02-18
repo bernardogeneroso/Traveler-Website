@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FiCalendar, FiCamera, FiCoffee, FiInfo } from "react-icons/fi";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import Icon from "../../../components/Icon";
 
 import HeaderAdmin from "../../../components/Main/HeaderAdmin";
@@ -24,16 +24,13 @@ interface FormProps {
   name: string;
 }
 
-interface Props {
-  match: {
-    params: {
-      id: string;
-    };
-  };
+interface ParamsProps {
+  id: string;
 }
 
-const EditCategorie: React.FC<Props> = (props) => {
+const EditCategorie: React.FC = (props) => {
   const history = useHistory();
+  const params = useParams<ParamsProps>();
   const { addToast } = useToast();
 
   const [menuIcons, setMenuIcons] = useState<MenuIconsProps>({
@@ -45,12 +42,12 @@ const EditCategorie: React.FC<Props> = (props) => {
   });
 
   useEffect(() => {
-    if (!props.match.params?.id) history.push("/categories");
-  }, [history, props.match.params?.id]);
+    if (!params.id) history.push("/categories");
+  }, [history, params.id]);
 
   useEffect(() => {
     api
-      .get(`/categories/${props.match.params?.id}`)
+      .get(`/categories/${params.id}`)
       .then(({ data }) => {
         setForm({
           name: data.name,
@@ -65,7 +62,7 @@ const EditCategorie: React.FC<Props> = (props) => {
       .catch(() => {
         history.push("/categories");
       });
-  }, [props.match.params?.id, history]);
+  }, [params.id, history]);
 
   const handleToggleMenuIcons = useCallback(() => {
     setMenuIcons((state) => {
@@ -100,7 +97,7 @@ const EditCategorie: React.FC<Props> = (props) => {
       event.preventDefault();
 
       try {
-        await api.post(`/categories/update/${props.match.params?.id}`, {
+        await api.post(`/categories/update/${params.id}`, {
           name: form.name,
           iconName: menuIcons.icon,
         });
@@ -115,12 +112,12 @@ const EditCategorie: React.FC<Props> = (props) => {
       } catch (err) {
         addToast({
           title: "Error ao atualizar a categoria",
-          description: err.message,
+          description: err.response.data.message,
           type: "error",
         });
       }
     },
-    [form.name, menuIcons.icon, props.match.params?.id, addToast, history]
+    [form.name, menuIcons.icon, params.id, addToast, history]
   );
 
   return (

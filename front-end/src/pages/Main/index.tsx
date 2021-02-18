@@ -14,7 +14,7 @@ import {
   ContentCity,
 } from "./styles";
 
-const Main: React.FC = () => {
+const Main = () => {
   const [citites, setCitites] = useState<CityProps[]>([]);
 
   useEffect(() => {

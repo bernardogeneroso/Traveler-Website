@@ -53,12 +53,12 @@ const MenuAdmin: React.FC<MenuAdminProps> = ({ optionSelectedMenu }) => {
               title="Categorias"
             />
           </Link>
-          <Link to="/cities">
+          <Link to="/evaluations">
             <FiMessageSquare
               size={24}
               onClick={() => setOptionSelected(3)}
               color={optionSelected === 3 ? "#fff" : "#FFA585"}
-              title="Comentários"
+              title="Avaliações"
             />
           </Link>
         </ContainerOptions>

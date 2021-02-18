@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import {
   FiCalendar,
   FiCamera,
@@ -77,16 +77,13 @@ interface EventCalendarProps {
   updated_at: string;
 }
 
-interface Props {
-  match: {
-    params: {
-      id: string;
-    };
-  };
+interface ParamsProps {
+  id: string;
 }
 
-const Edit: React.FC<Props> = (props) => {
+const Edit: React.FC = () => {
   const history = useHistory();
+  const params = useParams<ParamsProps>();
   const { addToast } = useToast();
 
   const [attendances, setAttendances] = useState<AttendanceProps[]>(() => {
@@ -131,12 +128,12 @@ const Edit: React.FC<Props> = (props) => {
   });
 
   useEffect(() => {
-    if (!props.match.params?.id) history.push("/cities");
-  }, [props, history]);
+    if (!params.id) history.push("/cities");
+  }, [params.id, history]);
 
   useEffect(() => {
     api
-      .get<PlaceProps>(`/places/${props.match.params.id}`)
+      .get<PlaceProps>(`/places/${params.id}`)
       .then(({ data }) => {
         // @ts-ignore
         setForm((state) => {
@@ -158,50 +155,48 @@ const Edit: React.FC<Props> = (props) => {
       .catch(() => {
         history.push("/cities");
       });
-  }, [props.match.params.id, history]);
+  }, [params.id, history]);
 
   useEffect(() => {
     if (form.categoryCheck === "FiCoffee") {
-      api
-        .get(`/places/show/service/${props.match.params.id}`)
-        .then(({ data }) => {
-          if (Object.keys(data).length === 0) return;
+      api.get(`/places/show/service/${params.id}`).then(({ data }) => {
+        if (Object.keys(data).length === 0) return;
 
-          setAttendances(() => {
-            const attendanceRows: AttendanceProps[] = data.map(
-              (attendanceRow: AttendanceRowProps) => {
-                const timeOpen = attendanceRow.timeOpen.split(" - ");
+        setAttendances(() => {
+          const attendanceRows: AttendanceProps[] = data.map(
+            (attendanceRow: AttendanceRowProps) => {
+              const timeOpen = attendanceRow.timeOpen.split(" - ");
 
-                if (attendanceRow.timeOpen === "Fechado") {
-                  return {
-                    open: false,
-                    day: attendanceRow.dayOfWeek,
-                    id: attendanceRow.id,
-                    time: {
-                      start: "-",
-                      end: "-",
-                    },
-                  };
-                }
-
+              if (attendanceRow.timeOpen === "Fechado") {
                 return {
-                  open: true,
+                  open: false,
                   day: attendanceRow.dayOfWeek,
                   id: attendanceRow.id,
                   time: {
-                    start: timeOpen[0],
-                    end: timeOpen[1],
+                    start: "-",
+                    end: "-",
                   },
                 };
               }
-            );
 
-            return attendanceRows;
-          });
+              return {
+                open: true,
+                day: attendanceRow.dayOfWeek,
+                id: attendanceRow.id,
+                time: {
+                  start: timeOpen[0],
+                  end: timeOpen[1],
+                },
+              };
+            }
+          );
+
+          return attendanceRows;
         });
+      });
     } else if (form.categoryCheck === "FiCalendar") {
       api
-        .get<EventCalendarProps>(`/places/show/event/${props.match.params.id}`)
+        .get<EventCalendarProps>(`/places/show/event/${params.id}`)
         .then(({ data }) => {
           setDatePicker({
             startDay: new Date(data.startDay),
@@ -209,7 +204,7 @@ const Edit: React.FC<Props> = (props) => {
           });
         });
     }
-  }, [form.categoryCheck, props.match.params.id]);
+  }, [form.categoryCheck, params.id]);
 
   useEffect(() => {
     api.get(`/categories`).then(({ data }) => {
@@ -397,8 +392,8 @@ const Edit: React.FC<Props> = (props) => {
 
           formData.append("categorie_id", findCategorie.id);
 
-          await api.post(`/places/update/${props.match.params.id}`, formData);
-          await api.post(`/places/create/service/${props.match.params.id}`, {
+          await api.post(`/places/update/${params.id}`, formData);
+          await api.post(`/places/create/service/${params.id}`, {
             service,
           });
         } else if (categoryCheck === "FiCalendar") {
@@ -416,11 +411,8 @@ const Edit: React.FC<Props> = (props) => {
 
           formData.append("categorie_id", findCategorie.id);
 
-          await api.post(`/places/update/${props.match.params.id}`, formData);
-          await api.post(
-            `/places/create/event/${props.match.params.id}`,
-            event
-          );
+          await api.post(`/places/update/${params.id}`, formData);
+          await api.post(`/places/create/event/${params.id}`, event);
         } else if (categoryCheck === "FiCamera") {
           const findCategorie = categories.find(
             (categorie) => categorie.iconName === "FiCamera"
@@ -430,7 +422,7 @@ const Edit: React.FC<Props> = (props) => {
 
           formData.append("categorie_id", findCategorie.id);
 
-          await api.post(`/places/update/${props.match.params.id}`, formData);
+          await api.post(`/places/update/${params.id}`, formData);
         }
 
         addToast({
@@ -441,6 +433,7 @@ const Edit: React.FC<Props> = (props) => {
       } catch (err) {
         addToast({
           title: "Error on create",
+          description: err.response.data.message,
           type: "error",
         });
       }
@@ -448,7 +441,7 @@ const Edit: React.FC<Props> = (props) => {
     [
       form,
       addToast,
-      props.match.params.id,
+      params.id,
       attendances,
       datePicker.endDay,
       datePicker.startDay,

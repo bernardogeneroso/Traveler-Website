@@ -70,10 +70,10 @@ export interface PlaceProps {
 
 export interface CategoriesProps {
   id: string;
-  name: string;
-  iconName: string;
-  created_at: string;
-  updated_at: string;
+  name: string | undefined;
+  iconName: string | undefined;
+  created_at: string | undefined;
+  updated_at: string | undefined;
 }
 
 interface ParamsProps {

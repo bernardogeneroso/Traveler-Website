@@ -15,6 +15,7 @@ import {
   ContainerOptions,
   ContainerStages,
   ContainercityEditName,
+  ContainerEvaluationsFilter,
 } from "./styles";
 
 interface HeaderProps {
@@ -25,7 +26,7 @@ interface HeaderProps {
     message: string;
     Icon?: IconType;
   };
-
+  evaluationFilter?: boolean;
   stage?: number;
   city?: CityProps;
   place?: PlaceProps;
@@ -36,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({
   lastPage,
   cityName,
   cityEditName,
+  evaluationFilter,
   MiddleContent,
   stage,
   city,
@@ -146,6 +148,16 @@ const Header: React.FC<HeaderProps> = ({
 
           {cityEditName && (
             <ContainercityEditName>{cityEditName}</ContainercityEditName>
+          )}
+
+          {evaluationFilter && (
+            <ContainerEvaluationsFilter>
+              <div className="focus">Todas</div>
+              <div>Recentes</div>
+              <div>Velhos</div>
+              <div>Aceitos</div>
+              <div>Recusados</div>
+            </ContainerEvaluationsFilter>
           )}
         </ContainerOptions>
       </ContainerStructure>

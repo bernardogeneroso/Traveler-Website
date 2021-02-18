@@ -26,7 +26,7 @@ export default class Evaluation {
   @Column()
   rating!: number;
 
-  @Column("boolean", { default: 0 })
+  @Column({ default: 0 })
   approved: number = 0;
 
   @Column() place_id!: string;

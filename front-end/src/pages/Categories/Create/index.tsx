@@ -85,7 +85,7 @@ const CreateCategorie: React.FC = () => {
       } catch (err) {
         addToast({
           title: "Error ao criar a categoria",
-          description: err.message,
+          description: err.response.data.message,
           type: "error",
         });
       }

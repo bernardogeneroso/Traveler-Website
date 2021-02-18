@@ -101,14 +101,9 @@ const Categories: React.FC = () => {
           if (!allCategories[i]) {
             allCategories.push({
               id: v4(),
-              //@ts-ignore
               name: undefined,
-              //@ts-ignore
               iconName: undefined,
-              places: undefined,
-              //@ts-ignore
               created_at: undefined,
-              //@ts-ignore
               updated_at: undefined,
             });
           }
@@ -127,7 +122,7 @@ const Categories: React.FC = () => {
     } catch (err) {
       addToast({
         title: "Error ao apagar a categoria",
-        description: err.message,
+        description: err.response.data.message,
         type: "error",
       });
     }
