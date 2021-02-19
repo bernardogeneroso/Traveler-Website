@@ -73,6 +73,7 @@ const CitiesProvider: React.FC = ({ children }) => {
       setSearchFilter(search);
 
       if (search !== "") {
+        setLoading(true);
         const { data } = await api.get(`/cities/?search=${search}`);
 
         const filterCitiesExist = data.filter(
@@ -91,10 +92,13 @@ const CitiesProvider: React.FC = ({ children }) => {
         }
 
         setCities(citiesResponse);
+        setLoading(false);
       } else {
+        setLoading(true);
         const { data } = await api.get(`/cities`);
         setFilterOption(1);
         setCities(data);
+        setLoading(false);
       }
     },
     [filterOption]
@@ -103,9 +107,11 @@ const CitiesProvider: React.FC = ({ children }) => {
   const cleanSearchFilter = useCallback(async () => {
     setSearchFilter("");
 
+    setLoading(true);
     const { data } = await api.get(`/cities`);
     setFilterOption(1);
     setCities(data);
+    setLoading(false);
   }, []);
 
   const addCity = useCallback((city: CityProps) => {
@@ -125,6 +131,7 @@ const CitiesProvider: React.FC = ({ children }) => {
   }, []);
 
   const removeCity = useCallback(async (id: number) => {
+    setLoading(true);
     await api.delete(`/cities/delete/${id}`);
 
     setCities((state) => {
@@ -132,6 +139,7 @@ const CitiesProvider: React.FC = ({ children }) => {
 
       return filter;
     });
+    setLoading(false);
   }, []);
 
   return (

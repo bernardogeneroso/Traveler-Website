@@ -5,6 +5,7 @@ import { IconType } from "react-icons";
 
 import { CityProps } from "../../../pages/Cities";
 import { PlaceProps } from "../../../pages/City";
+import { useEvaluations } from "../../../hooks/EvaluationsManager";
 import ModalRemove, { ModalRemoceProperties } from "../ModalRemove";
 
 import {
@@ -44,6 +45,8 @@ const Header: React.FC<HeaderProps> = ({
   place,
   buttonPosition,
 }) => {
+  const { filterOption, handleFilterOptions } = useEvaluations();
+
   const [modalRemoveCity, setModalRemoveCity] = useState<ModalRemoceProperties>(
     {
       toggle: false,
@@ -152,11 +155,36 @@ const Header: React.FC<HeaderProps> = ({
 
           {evaluationFilter && (
             <ContainerEvaluationsFilter>
-              <div className="focus">Todas</div>
-              <div>Recentes</div>
-              <div>Velhos</div>
-              <div>Aceitos</div>
-              <div>Recusados</div>
+              <div
+                className={filterOption === 1 ? "focus" : ""}
+                onClick={() => handleFilterOptions(1)}
+              >
+                Todas
+              </div>
+              <div
+                className={filterOption === 2 ? "focus" : ""}
+                onClick={() => handleFilterOptions(2)}
+              >
+                Recentes
+              </div>
+              <div
+                className={filterOption === 3 ? "focus" : ""}
+                onClick={() => handleFilterOptions(3)}
+              >
+                Velhos
+              </div>
+              <div
+                className={filterOption === 4 ? "focus" : ""}
+                onClick={() => handleFilterOptions(4)}
+              >
+                Aceitos
+              </div>
+              <div
+                className={filterOption === 5 ? "focus" : ""}
+                onClick={() => handleFilterOptions(5)}
+              >
+                Recusados
+              </div>
             </ContainerEvaluationsFilter>
           )}
         </ContainerOptions>

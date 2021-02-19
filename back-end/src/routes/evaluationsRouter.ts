@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import path from "path";
 import fs from "fs";
 import { promisify } from "util";
-import { getRepository, getConnection } from "typeorm";
+import { getRepository } from "typeorm";
 import multer from "multer";
 
 import Evaluation from "../database/entity/Evaluation";
@@ -28,7 +28,7 @@ evaluationsRouter.get("/:action", async (req, resp) => {
     if (action === "recent") {
       actionSQL = "approved = 0";
     } else if (action === "old") {
-      actionSQL = "approved = 1 AND approved = 2";
+      actionSQL = "approved = 1 OR approved = 2";
     } else if (action === "accepted") {
       actionSQL = "approved = 1";
     } else if (action === "refused") {

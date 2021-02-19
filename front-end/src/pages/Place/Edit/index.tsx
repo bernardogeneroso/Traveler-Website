@@ -432,7 +432,7 @@ const Edit: React.FC = () => {
         });
       } catch (err) {
         addToast({
-          title: "Error on create",
+          title: "Error ao atualizar o local",
           description: err.response.data.message,
           type: "error",
         });

@@ -84,7 +84,7 @@ const CreateCategorie: React.FC = () => {
         history.goBack();
       } catch (err) {
         addToast({
-          title: "Error ao criar a categoria",
+          title: "Erro ao criar a categoria",
           description: err.response.data.message,
           type: "error",
         });

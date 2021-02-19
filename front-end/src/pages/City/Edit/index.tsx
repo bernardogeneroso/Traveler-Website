@@ -118,7 +118,7 @@ const Edit: React.FC = () => {
         });
       } catch (err) {
         addToast({
-          title: "Error on update city",
+          title: "Error ao atualizar a cidade",
           description: err.response.data.message,
           type: "error",
         });

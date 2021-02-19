@@ -204,7 +204,7 @@ const Stage02: React.FC = () => {
         handleToggleFormRegistered();
       } catch (err) {
         addToast({
-          title: "Error on create",
+          title: "Erro ao criar",
           description: err.response.data.message,
           type: "error",
         });

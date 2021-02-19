@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { FiEdit, FiInfo, FiMenu, FiPlus, FiTrash } from "react-icons/fi";
+import { CgSpinnerTwo } from "react-icons/cg";
 import { Link } from "react-router-dom";
 import { v4 } from "uuid";
 
@@ -16,6 +17,13 @@ import {
   ContainerCategories,
   ContentCategories,
 } from "./styles";
+
+import {
+  ContainerLoading,
+  DialogLoading,
+  Loadbar,
+  Spinner,
+} from "../Cities/styles";
 
 import {
   Container as ContainerModalRemoveCategorie,
@@ -38,6 +46,7 @@ const Categories: React.FC = () => {
   const { addToast } = useToast();
 
   const [categories, setCategories] = useState<CategoriesProps[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [
     modalRemoveCategorie,
     setModalRemovePlace,
@@ -65,6 +74,7 @@ const Categories: React.FC = () => {
       }
 
       setCategories(allCategories);
+      setLoading(false);
     });
   }, []);
 
@@ -134,92 +144,109 @@ const Categories: React.FC = () => {
   ]);
 
   return (
-    <Container>
-      <HeaderAdmin
-        cityName="Categorias"
-        MiddleContent={{
-          message: "Você pode adicionar apenas três",
-          Icon: FiInfo,
-        }}
-        buttonPosition="categories"
-      />
-      <MenuAdmin optionSelectedMenu={2} />
+    <>
+      {loading ? (
+        <ContainerLoading>
+          <DialogLoading>
+            <Loadbar>
+              <Spinner>
+                <CgSpinnerTwo size={48} color="#fff" />
+              </Spinner>
+            </Loadbar>
+          </DialogLoading>
+        </ContainerLoading>
+      ) : (
+        <Container>
+          <HeaderAdmin
+            cityName="Categorias"
+            MiddleContent={{
+              message: "Você pode adicionar apenas três",
+              Icon: FiInfo,
+            }}
+            buttonPosition="categories"
+          />
+          <MenuAdmin optionSelectedMenu={2} />
 
-      <ContainerContent>
-        <ContainerCategories>
-          {categories.map((categorie: CategoriesProps) =>
-            categorie.name ? (
-              <ContentCategories key={categorie.id} noContent={false}>
-                <div className="footer">
-                  <div className="menu">
-                    <FiMenu color="#617480" />
-                  </div>
+          <ContainerContent>
+            <ContainerCategories>
+              {categories.map((categorie: CategoriesProps) =>
+                categorie.name ? (
+                  <ContentCategories key={categorie.id} noContent={false}>
+                    <div className="footer">
+                      <div className="menu">
+                        <FiMenu color="#617480" />
+                      </div>
 
-                  <div className="actions">
-                    <Link to={`/categories/edit/${categorie.id}`}>
-                      <div className="edit">
-                        <FiEdit color="#617480" />
+                      <div className="actions">
+                        <Link to={`/categories/edit/${categorie.id}`}>
+                          <div className="edit">
+                            <FiEdit color="#617480" />
+                          </div>
+                        </Link>
+                        <div
+                          className="trash"
+                          onClick={() =>
+                            handleSetModalRemoveCategorieID(categorie)
+                          }
+                        >
+                          <FiTrash color="#617480" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="content">
+                      <Icon
+                        iconName={categorie.iconName}
+                        size={64}
+                        color="#F25D27"
+                      />
+
+                      <h1>{categorie.name}</h1>
+
+                      <span>1.198 locais</span>
+                    </div>
+                  </ContentCategories>
+                ) : (
+                  <ContentCategories key={categorie.id} noContent={true}>
+                    <Link to="/categories/create">
+                      <div className="add-categorie">
+                        <FiPlus color="#F25D27" />
                       </div>
                     </Link>
-                    <div
-                      className="trash"
-                      onClick={() => handleSetModalRemoveCategorieID(categorie)}
-                    >
-                      <FiTrash color="#617480" />
-                    </div>
-                  </div>
-                </div>
-                <div className="content">
-                  <Icon
-                    iconName={categorie.iconName}
-                    size={64}
-                    color="#F25D27"
-                  />
+                  </ContentCategories>
+                )
+              )}
+            </ContainerCategories>
+          </ContainerContent>
 
-                  <h1>{categorie.name}</h1>
+          {modalRemoveCategorie.toggle && (
+            <ContainerModalRemoveCategorie>
+              <DialogModalRemoveCategorie>
+                <ContentModalRemoveCategorie>
+                  <ContainerShowModalRemoveCategorie>
+                    <img src={vector} alt="Vector 1" />
+                    <img src={vector1} alt="Vector 2" />
+                    <img src={vector2} alt="Vector 3" />
+                    <img src={trash} alt="Trash" />
+                  </ContainerShowModalRemoveCategorie>
 
-                  <span>1.198 locais</span>
-                </div>
-              </ContentCategories>
-            ) : (
-              <ContentCategories key={categorie.id} noContent={true}>
-                <Link to="/categories/create">
-                  <div className="add-categorie">
-                    <FiPlus color="#F25D27" />
+                  <h1>Excluir categoria</h1>
+                  <span>
+                    Tem certeza que quer excluir a categoria{" "}
+                    {modalRemoveCategorie.categorie?.name} e os seus 1.198
+                    loacis?
+                  </span>
+
+                  <div>
+                    <button onClick={handleToggleRemoveModal}>Não</button>
+                    <button onClick={() => handleRemoveCategorie()}>Sim</button>
                   </div>
-                </Link>
-              </ContentCategories>
-            )
+                </ContentModalRemoveCategorie>
+              </DialogModalRemoveCategorie>
+            </ContainerModalRemoveCategorie>
           )}
-        </ContainerCategories>
-      </ContainerContent>
-
-      {modalRemoveCategorie.toggle && (
-        <ContainerModalRemoveCategorie>
-          <DialogModalRemoveCategorie>
-            <ContentModalRemoveCategorie>
-              <ContainerShowModalRemoveCategorie>
-                <img src={vector} alt="Vector 1" />
-                <img src={vector1} alt="Vector 2" />
-                <img src={vector2} alt="Vector 3" />
-                <img src={trash} alt="Trash" />
-              </ContainerShowModalRemoveCategorie>
-
-              <h1>Excluir categoria</h1>
-              <span>
-                Tem certeza que quer excluir a categoria{" "}
-                {modalRemoveCategorie.categorie?.name} e os seus 1.198 loacis?
-              </span>
-
-              <div>
-                <button onClick={handleToggleRemoveModal}>Não</button>
-                <button onClick={() => handleRemoveCategorie()}>Sim</button>
-              </div>
-            </ContentModalRemoveCategorie>
-          </DialogModalRemoveCategorie>
-        </ContainerModalRemoveCategorie>
+        </Container>
       )}
-    </Container>
+    </>
   );
 };
 

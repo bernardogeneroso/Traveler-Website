@@ -111,7 +111,7 @@ const EditCategorie: React.FC = (props) => {
         history.goBack();
       } catch (err) {
         addToast({
-          title: "Error ao atualizar a categoria",
+          title: "Erro ao atualizar a categoria",
           description: err.response.data.message,
           type: "error",
         });
