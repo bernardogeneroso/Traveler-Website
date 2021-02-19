@@ -156,7 +156,7 @@ const Place = () => {
 
   useEffect(() => {
     if (place.id) {
-      api.get(`/evaluations/${place.id}`).then((response) => {
+      api.get(`/evaluations/place/${place.id}`).then((response) => {
         setEvaluations(response.data);
       });
     }

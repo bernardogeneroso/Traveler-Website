@@ -16,6 +16,7 @@ interface EvaluationsManagerData {
   filterOption: number;
   handleFilterOptions(option: number): void;
   handleRemoveEvaluation(id: string): void;
+  handleApprovedEvaluation(option: number, id: string): void;
 }
 
 const EvaluationsManager = createContext<EvaluationsManagerData>(
@@ -111,6 +112,50 @@ const EvaluationsProvider: React.FC = ({ children }) => {
     [addToast]
   );
 
+  const handleApprovedEvaluation = useCallback(
+    async (option: number, id: string) => {
+      setLoading(true);
+
+      try {
+        await api.post(`/evaluations/approved/${option}/${id}`);
+
+        setEvaluations((state) => {
+          if (!state) return undefined;
+
+          const filterRemoveEvaluation = state.map(
+            (evaluation: EvaluationProps) => {
+              if (evaluation.id === id) {
+                return {
+                  ...evaluation,
+                  approved: option,
+                };
+              }
+
+              return evaluation;
+            }
+          );
+
+          return filterRemoveEvaluation;
+        });
+
+        addToast({
+          title: `A avaliação foi ${option === 2 ? "recusada" : "aceite"}!`,
+          description: "",
+          type: "success",
+        });
+      } catch (err) {
+        addToast({
+          title: "Erro ao alterar o caso da avaliação",
+          description: err.response.data.message,
+          type: "error",
+        });
+      }
+
+      setLoading(false);
+    },
+    [addToast]
+  );
+
   return (
     <EvaluationsManager.Provider
       value={{
@@ -119,6 +164,7 @@ const EvaluationsProvider: React.FC = ({ children }) => {
         filterOption,
         handleFilterOptions,
         handleRemoveEvaluation,
+        handleApprovedEvaluation,
       }}
     >
       {children}

@@ -51,7 +51,12 @@ interface ModalEvaluations {
 }
 
 const Evaluations: React.FC = () => {
-  const { loading, evaluations, handleRemoveEvaluation } = useEvaluations();
+  const {
+    loading,
+    evaluations,
+    handleRemoveEvaluation,
+    handleApprovedEvaluation,
+  } = useEvaluations();
   const [
     modalApprovalsEvaluations,
     setModalApprovalsEvaluations,
@@ -260,8 +265,30 @@ const Evaluations: React.FC = () => {
                     </div>
                   </div>
                   <footer>
-                    <button className="refuse">Recusar</button>
-                    <button className="accept">Aceitar</button>
+                    <button
+                      className="refuse"
+                      onClick={() => {
+                        handleApprovedEvaluation(
+                          2,
+                          modalApprovalsEvaluations.evaluation?.id as string
+                        );
+                        handleToggleModalApprovalsEvaluations();
+                      }}
+                    >
+                      Recusar
+                    </button>
+                    <button
+                      className="accept"
+                      onClick={() => {
+                        handleApprovedEvaluation(
+                          1,
+                          modalApprovalsEvaluations.evaluation?.id as string
+                        );
+                        handleToggleModalApprovalsEvaluations();
+                      }}
+                    >
+                      Aceitar
+                    </button>
                   </footer>
                 </ContentModalApprovalsEvaluations>
               </DialogModalEvaluations>

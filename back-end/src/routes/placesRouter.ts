@@ -187,6 +187,8 @@ placesRouter.get("/show/service/:id", async (req, resp) => {
     if (!serviceOfPlace)
       throw new AppError("Error on get service of place", 400);
 
+    if (serviceOfPlace.length === 0) return resp.status(200).send(undefined);
+
     const daysOfWeek = [
       "Domingo",
       "Segunda",

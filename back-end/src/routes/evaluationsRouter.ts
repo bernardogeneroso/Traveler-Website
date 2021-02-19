@@ -48,8 +48,28 @@ evaluationsRouter.get("/:action", async (req, resp) => {
       .getRawMany();
 
     return resp.status(200).send(allEvaluations);
-  } catch (err) {
+  } catch {
     throw new AppError("Error on get evaluations", 404);
+  }
+});
+
+evaluationsRouter.get("/place/:id", async (req, resp) => {
+  const { id } = req.params;
+
+  const evaluationsRepo = getRepository(Evaluation);
+
+  try {
+    const allEvaluationsOfPlace = await evaluationsRepo.find({ place_id: id });
+
+    if (!allEvaluationsOfPlace)
+      throw new AppError("Error on get evaluations of place", 400);
+
+    if (allEvaluationsOfPlace.length === 0)
+      return resp.status(200).send(undefined);
+
+    return resp.status(200).send(allEvaluationsOfPlace);
+  } catch {
+    throw new AppError("Error on get evaluations of place", 400);
   }
 });
 
