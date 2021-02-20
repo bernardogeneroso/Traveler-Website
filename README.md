@@ -1,5 +1,10 @@
 # Traveler-Website
 
+#User view
+See demo to start!
+[Demo](https://traveler.bernardogeneroso.vercel.app/)
+
+#Admin view
 #1
 ![Screenshot](https://i.ibb.co/9qnHT0h/1.png)
 #2
@@ -22,6 +27,3 @@
 ![Screenshot](https://i.ibb.co/93N4RVX/10.png)
 #11
 ![Screenshot](https://i.ibb.co/mHNdFqq/11.png)
-
-
-[Demo](https://traveler.bernardogeneroso.vercel.app/)
