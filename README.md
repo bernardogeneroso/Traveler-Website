@@ -1,10 +1,10 @@
 # Traveler-Website
 
-#User view
+### User view
 See demo to start!
 [Demo](https://traveler.bernardogeneroso.vercel.app/)
 
-#Admin view
+### Admin view
 #1
 ![Screenshot](https://i.ibb.co/9qnHT0h/1.png)
 #2
