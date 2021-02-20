@@ -3,6 +3,7 @@
 ### User view
 See demo to start!
 [Demo](https://traveler.bernardogeneroso.vercel.app/)
+Note: API can take few seconds to start
 
 ### Admin view
 #1
